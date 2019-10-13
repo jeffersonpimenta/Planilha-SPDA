@@ -5,8 +5,9 @@ Planilha para análise do risco de descargas atmosféricas segundo a NBR5419-2
 # Importante
 
 - O autor não se responsabiliza por erros decorrentes do uso da tabela
-- O laudo de SPDA precisa ser acompanhado de uma ART assinada exclusivamente por engenheiro
+- O laudo de SPDA precisa ser acompanhado de uma ART assinada exclusivamente por engenheiro habilitado e qualificado
 - Todo estudo deve ser realizado após a revisão da norma atualizada
+- Todos os resultados oriundos da tabela devem ser checados manualmente
 
 # Funcionamento
 
