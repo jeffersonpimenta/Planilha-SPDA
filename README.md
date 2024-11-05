@@ -2,7 +2,6 @@
 
 Planilha para análise do risco de descargas atmosféricas segundo a NBR5419-2
 
-Um brinde da [Gauss Engenharia Elétrica](https://www.instagram.com/gauss_engenharia/)
 
 # Importante
 
