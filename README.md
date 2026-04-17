@@ -1,6 +1,6 @@
 ﻿# Planilha-SPDA
 
-Planilha para análise do risco de descargas atmosféricas segundo a NBR5419-2
+Planilha para análise do risco de descargas atmosféricas segundo a **ABNT NBR 5419-2:2026**
 
 
 # Importante
@@ -12,7 +12,7 @@ Planilha para análise do risco de descargas atmosféricas segundo a NBR5419-2
 
 # Funcionamento
 
-- A tabela considera duas áreas de risco Z0 e Z1, respectivamente fora e dentro da estrutura. 
+- A tabela considera duas áreas de risco Z0 e Z1, respectivamente fora e dentro da estrutura.
 
 - O risco R4 (perda econômica) na região Z0 está presente e o risco R1 (perda de vida humana) não está presente.
 
@@ -36,10 +36,58 @@ Planilha para análise do risco de descargas atmosféricas segundo a NBR5419-2
 
 ![alt text](https://github.com/jeffersonpimenta/Planilha-SPDA/blob/master/Imagens/imagem6.JPG)
 
+
+# Histórico de versões
+
+## v2.0 — Atualização para ABNT NBR 5419-2:2026
+
+Esta versão atualiza a planilha da edição **2015** para a edição **2026** da norma. As modificações
+seguem a norma publicada em 10/03/2026 (versão corrigida 02/04/2026) e estão descritas abaixo.
+
+### Eliminação do Risco R2
+
+O risco R2 (perda de serviço ao público) foi **eliminado** da norma 2026 e substituído pelo conceito
+de **Frequência de Danos F** (Seção 7 da norma). Na planilha:
+
+- A **Tabela 5 (Perdas L2)** da aba *Relatório* foi removida, com nota explicativa no lugar.
+- As linhas de **R2** nas tabelas de análise final (*Relatório* e *Estudo*) foram marcadas como
+  substituídas, com referência à Seção 7 da NBR 5419-2:2026.
+
+> **Nota:** A implementação da Seção 7 (cálculo completo de F = F_B + F_C + F_M + F_V + F_W + F_Z,
+> com frequência tolerável F_T = 0,1/ano para sistemas críticos e 1/ano para não-críticos)
+> não está incluída nesta versão da planilha e deverá ser avaliada em versão futura.
+
+### Correção de bug: R3 era sempre zero
+
+- **Bug corrigido:** as células G207 (*Relatório*) e G27 (*Estudo*) continham o valor `0`
+  fixo para o Risco R3 (patrimônio cultural), fazendo com que R3 nunca fosse calculado.
+- Corrigidas para a fórmula correta: **R3 = R_B + R_V** (conforme Equação 2 da norma).
+
+### Atualizações nas tabelas de lookup (aba *Dados*)
+
+| Tabela | Mudança |
+|--------|---------|
+| **B.1 — P_TA** | Adicionadas duas novas opções de medida de proteção: "Malha de equipotencialização do solo" (1×10⁻²) e "Estrutura metálica contínua ou concreto armado atuando como descida natural" (1×10⁻³). A tabela passa de 5 para **6 opções**. |
+| **B.2 — P_B** | Adicionadas duas novas linhas para SPDA com captação NPI + descida natural (P_B = 0,01) e cobertura metálica + descida natural (P_B = 0,001). |
+| **B.3 — P_SPD** | Adicionada opção "Melhor que Nível I" com P_SPD = 0,005–0,001. |
+| **B.5 — K_S3** | Adicionada opção intermediária "Evitar grandes laços" (K_S3 = 0,5), entre "sem preocupação" (1) e "evitar laços médios" (0,2). A tabela passa de 4 para **5 opções**. |
+| **A.2 — C_I** | Adicionada nota normativa: para solos com resistividade ρ > 400 Ω·m, a área de exposição equivalente de linha enterrada deve ser calculada como A_L = 0,6 × √ρ × L_L (conforme Nota 1 da Tabela A.2). |
+| **C.8 — L2** | Tabela removida, pois a perda L2 não existe mais na norma 2026. |
+
+### Correções de fórmulas
+
+- **VLOOKUPs desatualizados** nas abas *Relatório* e *Estudo* (células O27, O71, O75, O77
+  e correspondentes na aba Estudo) foram corrigidos para apontar para os novos ranges das
+  tabelas atualizadas.
+- **Células O31 e O32** (*Relatório*, fatores K_S1 e K_S2): adicionado `IFERROR` para
+  evitar erros quando os parâmetros de malha W_m1/W_m2 não forem informados.
+- **Célula O63** (*Estudo*, componente R_B): adicionado tratamento de erro para evitar
+  `#VALUE!` em determinadas combinações de entradas.
+
+
 # Licença
 
 <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/"><img alt="Licença Creative Commons" style="border-width:0" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png" /></a><br />Este obra está licenciado com uma Licença <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">Creative Commons Atribuição-NãoComercial-CompartilhaIgual 4.0 Internacional</a>.
 
-- Você é livre para compartilhar e modificar, entretanto deve dar os créditos do autor, não pode haver fins comerciais e e todo material derivado deste deve ser registrado sob a mesma licença.
+- Você é livre para compartilhar e modificar, entretanto deve dar os créditos do autor, não pode haver fins comerciais e todo material derivado deste deve ser registrado sob a mesma licença.
 - Os infratores estarão sujeitos às penas cominadas no código penal brasileiro.
-
