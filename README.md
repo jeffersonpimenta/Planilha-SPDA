@@ -1,4 +1,4 @@
-﻿# Planilha-SPDA
+# Planilha-SPDA
 
 Planilha para análise do risco de descargas atmosféricas segundo a **ABNT NBR 5419-2:2026**
 
@@ -37,14 +37,33 @@ Planilha para análise do risco de descargas atmosféricas segundo a **ABNT NBR 
 ![alt text](https://github.com/jeffersonpimenta/Planilha-SPDA/blob/master/Imagens/imagem6.JPG)
 
 
-# Histórico de versões
+# Resumo das mudanças ABNT NBR 5419-2:2015 para a versão 2026
 
-## v2.0 — Atualização para ABNT NBR 5419-2:2026
+A tabela abaixo resume as principais alterações normativas incorporadas nesta versão da planilha.
 
-Esta versão atualiza a planilha da edição **2015** para a edição **2026** da norma. As modificações
+| Tema | NBR 5419-2:2015 | NBR 5419-2:2026 |
+|---|---|---|
+| **Risco R2** (perda de serviço ao público) | Risco obrigatório, com perdas L2 e risco tolerável R_T = 10⁻³ | **Eliminado.** Substituído pelo conceito de **Frequência de Danos F** (Seção 7), com F_T = 0,1/ano para sistemas críticos e 1/ano para não-críticos |
+| **Risco R4** (perda econômica) | Risco normativo, obrigatório quando aplicável | **Informativo e opcional** (Anexo D). R_T não é normalizado (sugestão 10⁻³) |
+| **Frequência de Danos F** | Não existia | **Nova Seção 7:** F = F_B + F_C + F_M + F_V + F_W + F_Z (ainda em implementação) |
+| **Tabela B.1 — P_TA** (medidas contra tensão de toque/passo) | 5 opções | **6 opções** — adicionadas "Malha de equipotencialização do solo" (10⁻²) e "Estrutura metálica/concreto armado como descida natural" (10⁻³) |
+| **Tabela B.2 — P_B** (danos físicos por SPDA) | 6 linhas (não protegida + NP I–IV) | **9 linhas** — adicionadas opções para SPDA NP I + descida natural (P_B = 0,01) e cobertura metálica como captação natural (P_B = 0,001) |
+| **Tabela B.3 — P_SPD** (DPS coordenado) | 6 opções | Adicionada opção **"Melhor que NP I"** (P_SPD = 0,005–0,001) para DPS de desempenho superior |
+| **Tabela B.5 — K_S3** (roteamento interno) | 4 opções | **5 opções** — adicionado nível intermediário "Evitar grandes laços" (K_S3 = 0,5) entre "sem preocupação" (1) e "evitar laços médios" (0,2) |
+| **Tabela A.2 — C_I** (instalação da linha) | Fator fixo de 0,01 para linha em malha | Incluída **nota normativa**: para solos com ρ > 400 Ω·m, usar A_L = 0,6 × √ρ × L_L |
+| **Tabela B.4 — C_LD/C_LI** | 6 tipos de linha | Reformulada com **9 tipos**, incluindo cabos de proteção contra descargas e interfaces isolantes |
+| **Tabela C.8 — L2** | Valores de perda L2 por tipo de estrutura | **Removida** (perda L2 não existe mais) |
+| **Perda L_FT** | L_F apenas | **L_FT = L_F + L_E** (opcional, quando danos envolvem estruturas vizinhas ou meio ambiente) |
+| **Densidade N_G** | Mapa isoceráunico / valores calculados por T_d | **Anexo F normativo** — valores de N_G por município, obtidos de dados do satélite TRMM/LIS (1998–2013) tratados pelo INPE. Dados de outras fontes são **proibidos** |
+| **Período de transição** | — | Norma vigente a partir de **10/03/2026** (versão corrigida 02/04/2026), com 180 dias de transição para adequação |
+
+
+# Atualização para ABNT NBR 5419-2:2026
+
+O arquivo "Análise de Risco - Versão 2026.xlsx" atualiza a planilha da edição **2015** para a edição **2026** da norma. As modificações
 seguem a norma publicada em 10/03/2026 (versão corrigida 02/04/2026) e estão descritas abaixo.
 
-### Eliminação do Risco R2
+## Eliminação do Risco R2
 
 O risco R2 (perda de serviço ao público) foi **eliminado** da norma 2026 e substituído pelo conceito
 de **Frequência de Danos F** (Seção 7 da norma). Na planilha:
@@ -57,7 +76,7 @@ de **Frequência de Danos F** (Seção 7 da norma). Na planilha:
 > com frequência tolerável F_T = 0,1/ano para sistemas críticos e 1/ano para não-críticos)
 > não está incluída nesta versão da planilha e deverá ser avaliada em versão futura.
 
-### Atualizações nas tabelas de lookup (aba *Dados*)
+## Atualizações nas tabelas de lookup (aba *Dados*)
 
 | Tabela | Mudança |
 |--------|---------|
