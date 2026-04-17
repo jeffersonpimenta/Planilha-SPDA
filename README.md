@@ -57,12 +57,6 @@ de **Frequência de Danos F** (Seção 7 da norma). Na planilha:
 > com frequência tolerável F_T = 0,1/ano para sistemas críticos e 1/ano para não-críticos)
 > não está incluída nesta versão da planilha e deverá ser avaliada em versão futura.
 
-### Correção de bug: R3 era sempre zero
-
-- **Bug corrigido:** as células G207 (*Relatório*) e G27 (*Estudo*) continham o valor `0`
-  fixo para o Risco R3 (patrimônio cultural), fazendo com que R3 nunca fosse calculado.
-- Corrigidas para a fórmula correta: **R3 = R_B + R_V** (conforme Equação 2 da norma).
-
 ### Atualizações nas tabelas de lookup (aba *Dados*)
 
 | Tabela | Mudança |
@@ -73,16 +67,6 @@ de **Frequência de Danos F** (Seção 7 da norma). Na planilha:
 | **B.5 — K_S3** | Adicionada opção intermediária "Evitar grandes laços" (K_S3 = 0,5), entre "sem preocupação" (1) e "evitar laços médios" (0,2). A tabela passa de 4 para **5 opções**. |
 | **A.2 — C_I** | Adicionada nota normativa: para solos com resistividade ρ > 400 Ω·m, a área de exposição equivalente de linha enterrada deve ser calculada como A_L = 0,6 × √ρ × L_L (conforme Nota 1 da Tabela A.2). |
 | **C.8 — L2** | Tabela removida, pois a perda L2 não existe mais na norma 2026. |
-
-### Correções de fórmulas
-
-- **VLOOKUPs desatualizados** nas abas *Relatório* e *Estudo* (células O27, O71, O75, O77
-  e correspondentes na aba Estudo) foram corrigidos para apontar para os novos ranges das
-  tabelas atualizadas.
-- **Células O31 e O32** (*Relatório*, fatores K_S1 e K_S2): adicionado `IFERROR` para
-  evitar erros quando os parâmetros de malha W_m1/W_m2 não forem informados.
-- **Célula O63** (*Estudo*, componente R_B): adicionado tratamento de erro para evitar
-  `#VALUE!` em determinadas combinações de entradas.
 
 
 # Licença
