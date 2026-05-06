@@ -71,10 +71,7 @@ de **Frequência de Danos F** (Seção 7 da norma). Na planilha:
 - A **Tabela 5 (Perdas L2)** da aba *Relatório* foi removida, com nota explicativa no lugar.
 - As linhas de **R2** nas tabelas de análise final (*Relatório* e *Estudo*) foram marcadas como
   substituídas, com referência à Seção 7 da NBR 5419-2:2026.
-
-> **Nota:** A implementação da Seção 7 (cálculo completo de F = F_B + F_C + F_M + F_V + F_W + F_Z,
-> com frequência tolerável F_T = 0,1/ano para sistemas críticos e 1/ano para não-críticos)
-> não está incluída nesta versão da planilha e deverá ser avaliada em versão futura.
+- Inclusão da análise frequência de danos F.
 
 ## Atualizações nas tabelas de lookup (aba *Dados*)
 
