@@ -1,0 +1,20 @@
+[project]
+name = "spda"
+version = "0.1.0"
+description = "Análise de risco de SPDA conforme ABNT NBR 5419-2:2026"
+requires-python = ">=3.11"
+dependencies = ["pydantic>=2.6", "rich>=13", "questionary>=2"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[project.scripts]
+spda = "spda.cli.menu:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
