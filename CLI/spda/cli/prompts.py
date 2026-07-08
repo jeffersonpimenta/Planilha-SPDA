@@ -66,7 +66,7 @@ class QuestionaryPrompter:
             try:
                 v = float(bruto.replace(",", "."))
             except ValueError:
-                print("  Valor invalido; digite um numero.")
+                print("  Valor inválido; digite um número.")
                 continue
             if minimo is not None and v < minimo:
                 print(f"  Deve ser >= {minimo}.")

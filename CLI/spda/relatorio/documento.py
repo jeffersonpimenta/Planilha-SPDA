@@ -70,7 +70,7 @@ class Documento:
     blocos: list[Bloco] = field(default_factory=list)
 
 
-_PREFIXO_NOTA = {"info": "NOTA", "aviso": "AVISO", "critico": "CRITICO"}
+_PREFIXO_NOTA = {"info": "NOTA", "aviso": "AVISO", "critico": "CRÍTICO"}
 
 
 def _md_equacao(e: Equacao) -> list[str]:
@@ -119,7 +119,7 @@ def para_markdown(doc: Documento) -> str:
                 out.append(f"{marcador(i)} {item}")
             out.append("")
         elif isinstance(b, Glossario):
-            out += ["| Simbolo | Descricao | Unidade |", "|---|---|---|"]
+            out += ["| Símbolo | Descrição | Unidade |", "|---|---|---|"]
             for simbolo, nome, unidade in b.itens:
                 out.append(f"| {simbolo} | {nome} | {unidade} |")
             out.append("")

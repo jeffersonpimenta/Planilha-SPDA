@@ -282,7 +282,7 @@ def _mem_zona(projeto: Projeto, est: Estrutura, zona: Zona,
             else:
                 mz.L4_A = Operacao(
                     simbolo="L4_A", eq="D.1", operandos={}, resultado=0.0,
-                    origem="sem animais na zona -> L_T nao se aplica "
+                    origem="sem animais na zona -> L_T não se aplica "
                            "(Tabela C.12) -> L4_A = 0")
             mz.L4_B = _op("L4_B", "D.3",
                           {"r_p": r_p.resultado, "r_f": r_f.resultado,
@@ -436,10 +436,10 @@ def _mem_zona(projeto: Projeto, est: Estrutura, zona: Zona,
     if tem_l4:
         mz.R4_total = Operacao(simbolo="R4_total", eq="13.3", operandos={},
                                resultado=R4_total, origem="soma D1+D2+D3 (L4)")
-    mz.F_zona = Operacao(simbolo="F_zona", eq="Secao 7", operandos={},
+    mz.F_zona = Operacao(simbolo="F_zona", eq="Seção 7", operandos={},
                          resultado=F_zona_val,
                          origem="F_B+F_C+F_M+F_V+F_W+F_Z (F_V com P_EB; F_B "
-                                "so com equipamento em ZPR 0A)")
+                                "só com equipamento em ZPR 0A)")
     return mz
 
 
@@ -491,13 +491,13 @@ def _mem_estrutura(projeto: Projeto, est: Estrutura,
     R4_val = sum(z.R4_total.resultado if z.R4_total else 0.0 for z in zonas)
     F_val = sum(z.F_zona.resultado for z in zonas)
 
-    me.R1 = Operacao(simbolo="R1", eq="Secao 8", operandos=r1_parcelas,
+    me.R1 = Operacao(simbolo="R1", eq="Seção 8", operandos=r1_parcelas,
                      resultado=R1_val, origem="soma das parcelas por zona")
-    me.R3 = Operacao(simbolo="R3", eq="Secao 8", operandos={}, resultado=R3_val,
+    me.R3 = Operacao(simbolo="R3", eq="Seção 8", operandos={}, resultado=R3_val,
                      origem="soma (R_B3+R_V3)")
-    me.R4 = Operacao(simbolo="R4", eq="Secao 8", operandos={}, resultado=R4_val,
+    me.R4 = Operacao(simbolo="R4", eq="Seção 8", operandos={}, resultado=R4_val,
                      origem="soma R4_total")
-    me.F = Operacao(simbolo="F", eq="Secao 7", operandos={}, resultado=F_val,
+    me.F = Operacao(simbolo="F", eq="Seção 7", operandos={}, resultado=F_val,
                     origem="soma F_zona")
     me.dominantes = sorted(r1_parcelas.items(), key=lambda kv: kv[1], reverse=True)
     return me

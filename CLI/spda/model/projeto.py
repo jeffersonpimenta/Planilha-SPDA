@@ -9,6 +9,7 @@ from spda.model.enums import (
     CategoriaLinha, ClasseBlindagemRS, TipoOcupacao, ZonaExplosao,
 )
 from spda.model.identificacao import Identificacao
+from spda.model.solucao import Solucao
 
 
 class Medidas(BaseModel):
@@ -118,4 +119,7 @@ class Projeto(BaseModel):
     # 1e-3): a nota das Eqs D.1-D.4 (norma:2635) exige razoes = 1 nesse caso.
     r4_representativo: bool = False
     estruturas: list[Estrutura] = Field(default_factory=list)
+    # Overlay do Estudo de Solucoes (medidas adotadas alem das instaladas).
+    # None = sem estudo salvo; arquivos antigos carregam sem migracao.
+    solucao: Solucao | None = None
     identificacao: Identificacao | None = None

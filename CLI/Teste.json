@@ -5,18 +5,7 @@
   "S_M": 250000.0,
   "rt_override": null,
   "ft_override": null,
-  "identificacao": {
-    "titulo": "Analise de Risco NBR 5419-2 - Projeto Teste",
-    "cliente": "Cliente Exemplo LTDA",
-    "endereco": "Rua das Descargas, 1000 - Belo Horizonte/MG",
-    "responsavel": "Eng. Jefferson Pimenta",
-    "art": "BR20260012345",
-    "registro": "CREA-MG 123456/D",
-    "norma": "ABNT NBR 5419-2",
-    "revisao": "2026",
-    "data": "2026-07-01",
-    "observacoes": "Projeto sintetico para cobertura total de parametros do programa."
-  },
+  "r4_representativo": false,
   "estruturas": [
     {
       "nome": "E1 Galpao Industrial (explosao zona 1/21, forma complexa)",
@@ -163,6 +152,7 @@
       "risco_incendio": "normal",
       "providencias_incendio": "extintor",
       "ocupacao": "hospital",
+      "zona_explosao": "nenhuma",
       "risco_explosao": false,
       "sistemas_criticos": true,
       "nivel_spda": "II",
@@ -293,6 +283,8 @@
       "tipo_construcao": "robusta",
       "risco_incendio": "baixo",
       "providencias_incendio": "nenhuma",
+      "ocupacao": "outros",
+      "zona_explosao": "nenhuma",
       "risco_explosao": false,
       "sistemas_criticos": false,
       "nivel_spda": "nenhum",
@@ -359,6 +351,7 @@
       "risco_incendio": "sem_risco",
       "providencias_incendio": "fixo_automatico",
       "ocupacao": "comercial",
+      "zona_explosao": "nenhuma",
       "risco_explosao": false,
       "sistemas_criticos": true,
       "nivel_spda": "IV",
@@ -452,6 +445,7 @@
       "risco_incendio": "alto",
       "providencias_incendio": "extintor",
       "ocupacao": "industrial",
+      "zona_explosao": "nenhuma",
       "risco_explosao": true,
       "sistemas_criticos": false,
       "nivel_spda": "III",
@@ -534,6 +528,7 @@
       "risco_incendio": "normal",
       "providencias_incendio": "nenhuma",
       "ocupacao": "escola",
+      "zona_explosao": "nenhuma",
       "risco_explosao": false,
       "sistemas_criticos": false,
       "nivel_spda": "I_descida_natural",
@@ -572,6 +567,8 @@
       "tipo_construcao": "simples",
       "risco_incendio": "baixo",
       "providencias_incendio": "extintor",
+      "ocupacao": "outros",
+      "zona_explosao": "nenhuma",
       "risco_explosao": false,
       "sistemas_criticos": false,
       "nivel_spda": "captacao_descida_natural",
@@ -599,5 +596,28 @@
       ],
       "linhas": []
     }
-  ]
+  ],
+  "solucao": {
+    "estruturas": {
+      "E1 Galpao Industrial (explosao zona 1/21, forma complexa)": {
+        "medidas": {
+          "dps": "IV",
+          "ligacao_eq": "IV",
+          "toque_entrada": "isolacao"
+        }
+      }
+    }
+  },
+  "identificacao": {
+    "titulo": "Analise de Risco NBR 5419-2 - Projeto Teste",
+    "cliente": "Cliente Exemplo LTDA",
+    "endereco": "Rua das Descargas, 1000 - Belo Horizonte/MG",
+    "responsavel": "Eng. Jefferson Pimenta",
+    "art": "BR20260012345",
+    "registro": "CREA-MG 123456/D",
+    "norma": "ABNT NBR 5419-2",
+    "revisao": "2026",
+    "data": "2026-07-01",
+    "observacoes": "Projeto sintetico para cobertura total de parametros do programa."
+  }
 }

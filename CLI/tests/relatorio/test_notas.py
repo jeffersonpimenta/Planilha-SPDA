@@ -27,7 +27,7 @@ def _mem(estruturas, identificacao=None, cidade="Cidade X"):
 
 def test_sem_identificacao_gera_aviso():
     notas = gerar_notas(_mem([_est()]))
-    assert any(n.nivel == "aviso" and "identificacao" in n.texto.lower()
+    assert any(n.nivel == "aviso" and "identificação" in n.texto.lower()
                for n in notas)
 
 

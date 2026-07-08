@@ -14,12 +14,16 @@ from pydantic import ValidationError
 from spda.app import analisar, analisar_memoria
 from spda.cli import persistencia
 from spda.cli.prompts import Prompter, QuestionaryPrompter
+from spda.cli.sandbox import executar_sandbox
 from spda.cli.wizards import build_estrutura, build_projeto, editar_estrutura
 from spda.model.projeto import Projeto
 from spda.model.resultado import Resultado
 from spda.relatorio import json_out, markdown
 from spda.relatorio.console import imprimir_resumo
 from spda.relatorio.memorial import gerar_memorial_html, gerar_memorial_markdown
+from spda.relatorio.memorial_solucao import (
+    gerar_memorial_solucao_html, gerar_memorial_solucao_markdown,
+)
 from spda.solucao.estudo import estudo_solucao
 
 ACOES = [
@@ -29,8 +33,8 @@ ACOES = [
     "Editar estrutura",
     "Remover estrutura",
     "Calcular risco",
-    "Estudo de solucao",
-    "Gerar relatorio",
+    "Estudo de solução",
+    "Gerar relatório",
     "Salvar projeto",
     "Carregar projeto",
     "Sair",
@@ -74,7 +78,7 @@ def executar_acao(acao: str, estado: EstadoSessao, prompter: Prompter,
         if _exige_projeto(estado, escrever):
             ests = estado.projeto.estruturas
             if not ests:
-                escrever("Nao ha estruturas para editar.")
+                escrever("Não há estruturas para editar.")
             else:
                 # rotulo indexado "i. nome" -> selecao unica (nomes podem repetir)
                 rotulos = [f"{i + 1}. {e.nome}" for i, e in enumerate(ests)]
@@ -88,7 +92,7 @@ def executar_acao(acao: str, estado: EstadoSessao, prompter: Prompter,
         if _exige_projeto(estado, escrever):
             nomes = [e.nome for e in estado.projeto.estruturas]
             if not nomes:
-                escrever("Nao ha estruturas para remover.")
+                escrever("Não há estruturas para remover.")
             else:
                 alvo = prompter.selecionar("Remover qual estrutura?", nomes)
                 # remove apenas a PRIMEIRA com esse nome (nomes podem repetir)
@@ -104,30 +108,20 @@ def executar_acao(acao: str, estado: EstadoSessao, prompter: Prompter,
             estado.resultado = analisar(estado.projeto, estado.config)
             imprimir_resumo(estado.resultado, console)
 
-    elif acao == "Estudo de solucao":
+    elif acao == "Estudo de solução":
         if _exige_projeto(estado, escrever):
-            estudo = estudo_solucao(estado.projeto, estado.config)
-            if not estudo.estruturas:
-                escrever("Nenhuma estrutura excede R1: nao ha estudo a propor.")
-            for e in estudo.estruturas:  # nao executa se vazio (guard acima)
-                escrever(f"Estudo {e.nome}: R1 {e.R1_inicial:.2e} -> "
-                         f"{e.R1_final:.2e} (RT {e.rt_R1:.1e}) "
-                         f"{'OK' if e.atingiu_rt else 'NAO ATINGIU'}")
-                for i, passo in enumerate(e.passos, 1):
-                    escrever(f"  {i}. {passo.medida}: {passo.parametro} "
-                             f"{passo.de} -> {passo.para} | R1={passo.R_projetado:.2e}")
+            executar_sandbox(estado, prompter, console, escrever)
 
-    elif acao == "Gerar relatorio":
+    elif acao == "Gerar relatório":
         if _exige_projeto(estado, escrever):
             res = estado.resultado or analisar(estado.projeto, estado.config)
             estado.resultado = res
-            fmt = prompter.selecionar(
-                "Formato do relatorio",
-                ["markdown", "json", "memorial-md", "memorial-html"])
+            formatos = ["markdown", "json", "memorial-md", "memorial-html"]
+            fmt = prompter.selecionar("Formato do relatório", formatos)
             sufixos = {"markdown": ".md", "json": ".json",
                        "memorial-md": ".md", "memorial-html": ".html"}
             caminho = persistencia.validar_caminho(
-                prompter.texto("Caminho do arquivo de saida"),
+                prompter.texto("Caminho do arquivo de saída"),
                 sufixo_padrao=sufixos[fmt])
             caminho.parent.mkdir(parents=True, exist_ok=True)
             if fmt == "json":
@@ -137,13 +131,21 @@ def executar_acao(acao: str, estado: EstadoSessao, prompter: Prompter,
                 caminho.write_text(markdown.gerar_markdown(res, estudo=est),
                                    encoding="utf-8")
             else:  # memorial-md | memorial-html
-                mem = analisar_memoria(estado.projeto, estado.config)
-                est = estudo_solucao(estado.projeto, estado.config)
-                texto = (gerar_memorial_markdown(mem, estudo=est)
-                         if fmt == "memorial-md"
-                         else gerar_memorial_html(mem, estudo=est))
+                if estado.projeto.solucao is not None:
+                    # Documento unico: memorial instalado + secao de solucao.
+                    texto = (gerar_memorial_solucao_markdown(estado.projeto,
+                                                             estado.config)
+                             if fmt == "memorial-md"
+                             else gerar_memorial_solucao_html(estado.projeto,
+                                                              estado.config))
+                else:
+                    mem = analisar_memoria(estado.projeto, estado.config)
+                    est = estudo_solucao(estado.projeto, estado.config)
+                    texto = (gerar_memorial_markdown(mem, estudo=est)
+                             if fmt == "memorial-md"
+                             else gerar_memorial_html(mem, estudo=est))
                 caminho.write_text(texto, encoding="utf-8")
-            escrever(f"Relatorio salvo em {caminho}.")
+            escrever(f"Relatório salvo em {caminho}.")
 
     elif acao == "Salvar projeto":
         if _exige_projeto(estado, escrever):
@@ -161,7 +163,7 @@ def executar_acao(acao: str, estado: EstadoSessao, prompter: Prompter,
         # Rede de seguranca para divergencia ACOES<->branches. AssertionError
         # (e nao ValueError) para NAO ser engolida pelo except do loop, que
         # trata erros de usuario -- aqui e erro de programacao, deve estourar.
-        raise AssertionError(f"Acao sem branch de despacho: {acao}")
+        raise AssertionError(f"Ação sem branch de despacho: {acao}")
 
     return estado
 
@@ -170,13 +172,13 @@ def loop(prompter: Prompter, console, escrever: Callable[[str], None],
          estado: EstadoSessao | None = None) -> EstadoSessao:
     estado = estado or EstadoSessao()
     while True:
-        acao = prompter.selecionar("Acao", ACOES)
+        acao = prompter.selecionar("Ação", ACOES)
         if acao == "Sair":
             return estado
         try:
             estado = executar_acao(acao, estado, prompter, console, escrever)
         except KeyboardInterrupt:
-            escrever("Acao cancelada.")
+            escrever("Ação cancelada.")
         except (OSError, ValueError, ValidationError) as e:
             # OSError cobre FileNotFoundError, PermissionError, IsADirectoryError
             # (ex.: caminho de arquivo invalido) sem derrubar a CLI.

@@ -182,7 +182,7 @@ ROTULOS: dict[Enum, str] = {
     NivelDPS.III: "DPS projetado para NP III",
     NivelDPS.II: "DPS projetado para NP II",
     NivelDPS.I: "DPS projetado para NP I",
-    NivelDPS.melhor_I: "DPS com caracteristicas melhores que NP I",
+    NivelDPS.melhor_I: "DPS com características melhores que NP I",
     # Tabela C.3 -- fator de redução r_t (superfície do solo/piso)
     TipoSuperficie.terra_concreto: "Agricultura, concreto",
     TipoSuperficie.marmore_ceramica: "Mármore, cerâmica",
@@ -269,8 +269,31 @@ ROTULOS: dict[Enum, str] = {
 }
 
 
+# Enums str com values iguais colidem como chaves de dict (hash e eq pelo
+# value do mixin str): no literal ROTULOS acima, a ultima entrada SOBRESCREVE
+# as anteriores. Grupos afetados: NivelProtecao/NivelDPS ("I".."IV") e
+# ZonaExplosao/ProvidenciaIncendio/ProtecaoToquePasso ("nenhuma").
+# Este overlay tipado desambigua na consulta.
+_ROTULOS_TIPADOS: dict[tuple[type, str], str] = {
+    (NivelProtecao, "IV"): "Estrutura protegida por SPDA nível IV",
+    (NivelProtecao, "III"): "Estrutura protegida por SPDA nível III",
+    (NivelProtecao, "II"): "Estrutura protegida por SPDA nível II",
+    (NivelProtecao, "I"): "Estrutura protegida por SPDA nível I",
+    (NivelDPS, "IV"): "DPS projetado para NP IV",
+    (NivelDPS, "III"): "DPS projetado para NP III",
+    (NivelDPS, "II"): "DPS projetado para NP II",
+    (NivelDPS, "I"): "DPS projetado para NP I",
+    (ZonaExplosao, "nenhuma"): "Sem risco de explosão",
+    (ProvidenciaIncendio, "nenhuma"): "Nenhuma providência",
+    (ProtecaoToquePasso, "nenhuma"): "Nenhuma medida de proteção",
+}
+
+
 def rotulo(membro) -> str:
     """Rotulo legivel de um membro de enum (fallback para o value)."""
     if membro is None:
         return "nenhum"
+    tipado = _ROTULOS_TIPADOS.get((type(membro), getattr(membro, "name", "")))
+    if tipado is not None:
+        return tipado
     return ROTULOS.get(membro, getattr(membro, "value", str(membro)))

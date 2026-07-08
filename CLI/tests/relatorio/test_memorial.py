@@ -76,7 +76,7 @@ def test_memorial_inclui_notas_e_diagnostico():
     mem = analisar_memoria(proj)
     md = gerar_memorial_markdown(mem)
 
-    assert "## Notas tecnicas" in md
-    assert "## Diagnostico por estrutura" in md
+    assert "## Notas técnicas" in md
+    assert "## Diagnóstico por estrutura" in md
     assert "AVISO:" in md      # sem identificacao -> aviso de assinatura
-    assert "CRITICO:" in md    # R1 desta estrutura excede
+    assert "CRÍTICO:" in md    # R1 desta estrutura excede

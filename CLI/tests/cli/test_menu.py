@@ -104,12 +104,13 @@ def test_editar_estrutura_drill_down_e_preserva_reservado():
     assert novo.resultado is None
 
 
-def test_estudo_de_solucao_gera_passos():
+def test_estudo_de_solucao_abre_sandbox():
     linhas, escrever = _saida()
     estado = EstadoSessao(projeto=_proj())
-    novo = executar_acao("Estudo de solucao", estado, FakePrompter([]),
-                         _console(), escrever)
-    assert any("Estudo" in s or "R1" in s for s in linhas)
+    # sandbox: selecionar estrutura -> "Voltar" encerra
+    novo = executar_acao("Estudo de solução", estado,
+                         FakePrompter(["Voltar"]), _console(), escrever)
+    assert novo.projeto is estado.projeto  # nao quebrou nem alterou
 
 
 def test_salvar_e_carregar_projeto(tmp_path):
@@ -131,7 +132,7 @@ import pytest
 @pytest.mark.parametrize("acao", [
     "Adicionar estrutura", "Listar estruturas", "Editar estrutura",
     "Remover estrutura",
-    "Calcular risco", "Estudo de solucao", "Gerar relatorio",
+    "Calcular risco", "Estudo de solução", "Gerar relatório",
     "Salvar projeto",
 ])
 def test_acoes_guardadas_tem_branch(acao):
@@ -153,7 +154,7 @@ def test_gerar_relatorio_json(tmp_path):
     destino = tmp_path / "rel.json"
     estado = EstadoSessao(projeto=_proj())
     p = FakePrompter(["json", str(destino)])
-    executar_acao("Gerar relatorio", estado, p, _console(), (lambda s: None))
+    executar_acao("Gerar relatório", estado, p, _console(), (lambda s: None))
     assert destino.exists()
     import json
     assert json.loads(destino.read_text(encoding="utf-8"))["projeto"] == "P"
@@ -182,7 +183,7 @@ def test_gerar_relatorio_markdown(tmp_path):
     destino = tmp_path / "rel.md"
     estado = EstadoSessao(projeto=_proj())
     p = FakePrompter(["markdown", str(destino)])
-    executar_acao("Gerar relatorio", estado, p, _console(), (lambda s: None))
+    executar_acao("Gerar relatório", estado, p, _console(), (lambda s: None))
     assert destino.exists()
     assert "Relat" in destino.read_text(encoding="utf-8")
 
@@ -191,18 +192,18 @@ def test_gerar_relatorio_memorial_md(tmp_path):
     destino = tmp_path / "memorial.md"
     estado = EstadoSessao(projeto=_proj())
     p = FakePrompter(["memorial-md", str(destino)])
-    executar_acao("Gerar relatorio", estado, p, _console(), (lambda s: None))
+    executar_acao("Gerar relatório", estado, p, _console(), (lambda s: None))
     assert destino.exists()
     texto = destino.read_text(encoding="utf-8")
-    assert "## Notas tecnicas" in texto
-    assert "## Diagnostico por estrutura" in texto
+    assert "## Notas técnicas" in texto
+    assert "## Diagnóstico por estrutura" in texto
 
 
 def test_gerar_relatorio_memorial_html(tmp_path):
     destino = tmp_path / "memorial.html"
     estado = EstadoSessao(projeto=_proj())
     p = FakePrompter(["memorial-html", str(destino)])
-    executar_acao("Gerar relatorio", estado, p, _console(), (lambda s: None))
+    executar_acao("Gerar relatório", estado, p, _console(), (lambda s: None))
     assert destino.exists()
     texto = destino.read_text(encoding="utf-8")
     assert "<html" in texto.lower()

@@ -23,7 +23,7 @@ def validar_caminho(caminho: str | Path, *, sufixo_padrao: str | None = None) ->
             "ou C:\\Users\\voce\\Desktop\\projeto.json")
     p = Path(bruto).expanduser()
     if not p.name:
-        raise ValueError("Caminho invalido (sem nome de arquivo). Ex.: projeto.json")
+        raise ValueError("Caminho inválido (sem nome de arquivo). Ex.: projeto.json")
     if sufixo_padrao and not p.suffix:
         p = p.with_suffix(sufixo_padrao)
     return p

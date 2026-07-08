@@ -14,7 +14,7 @@ from spda.relatorio.documento import (
     Tabela, Titulo,
 )
 
-_PREFIXO_NOTA = {"info": "NOTA", "aviso": "AVISO", "critico": "CRITICO"}
+_PREFIXO_NOTA = {"info": "NOTA", "aviso": "AVISO", "critico": "CRÍTICO"}
 
 _CSS = """
 :root { --tinta: #1a1a1a; --borda: #888; --aviso: #b35900; --critico: #a40000; }
@@ -95,7 +95,7 @@ def _html_bloco(b) -> str:
         linhas = "".join(
             f"<tr><td>{_esc(s)}</td><td>{_esc(n)}</td><td>{_esc(u)}</td></tr>"
             for s, n, u in b.itens)
-        return ("<table><thead><tr><th>Simbolo</th><th>Descricao</th>"
+        return ("<table><thead><tr><th>Símbolo</th><th>Descrição</th>"
                 f"<th>Unidade</th></tr></thead><tbody>{linhas}</tbody></table>")
     if isinstance(b, QuebraPagina):
         return '<div class="quebra"></div>'

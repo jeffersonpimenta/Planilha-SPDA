@@ -16,6 +16,7 @@ from spda.solucao.catalogo import MEDIDAS
 
 
 class PassoSolucao(BaseModel):
+    medida_id: str = ""
     medida: str
     parametro: str
     componentes: list[str]
@@ -65,7 +66,7 @@ def _viol(R1: float, F: float, rt_R1: float, ft: float) -> float:
 
 
 def _estudar_estrutura(projeto: Projeto, est: Estrutura, rt_R1: float,
-                       ft: float, config: str | None) -> EstudoEstrutura:
+                       ft: float, config: str | None) -> tuple[EstudoEstrutura, Estrutura]:
     atual = est.model_copy(deep=True)
     R1_ini, F_ini = _metricas_de(projeto, atual, config)
     passos: list[PassoSolucao] = []
@@ -91,7 +92,7 @@ def _estudar_estrutura(projeto: Projeto, est: Estrutura, rt_R1: float,
             break
         _, R1, F, atual, medida, de, para = melhor
         passos.append(PassoSolucao(
-            medida=medida.descricao, parametro=medida.parametro,
+            medida_id=medida.id, medida=medida.descricao, parametro=medida.parametro,
             componentes=list(medida.componentes), de=de, para=para,
             R_projetado=R1, F_projetado=F,
             atingiu_rt=R1 <= rt_R1, atingiu_ft=F <= ft,
@@ -101,7 +102,7 @@ def _estudar_estrutura(projeto: Projeto, est: Estrutura, rt_R1: float,
         nome=est.nome, R1_inicial=R1_ini, rt_R1=rt_R1, R1_final=R1,
         atingiu_rt=R1 <= rt_R1, F_inicial=F_ini, ft=ft, F_final=F,
         atingiu_ft=F <= ft, passos=passos,
-    )
+    ), atual
 
 
 def estudo_solucao(projeto: Projeto, config: str | None = None) -> EstudoSolucao:
@@ -109,8 +110,40 @@ def estudo_solucao(projeto: Projeto, config: str | None = None) -> EstudoSolucao
     rt_R1 = res.rt["R1"]
     # F_T e por estrutura (7.3.4): 0.1 (criticos) / 1.0 (nao criticos) / override.
     estudos = [
-        _estudar_estrutura(projeto, est, rt_R1, res_est.ft, config)
+        _estudar_estrutura(projeto, est, rt_R1, res_est.ft, config)[0]
         for est, res_est in zip(projeto.estruturas, res.estruturas)
         if res_est.excede_R1 or res_est.excede_F
     ]
     return EstudoSolucao(projeto=projeto.nome, estruturas=estudos)
+
+
+def sugerir_solucao(projeto: Projeto, nome_estrutura: str,
+                    parcial: "SolucaoEstrutura | None" = None,
+                    config: str | None = None) -> "SolucaoEstrutura":
+    """Greedy a partir do estado (instalado + `parcial`); devolve o delta
+    medida_id -> degrau em relacao ao INSTALADO (inclui o parcial)."""
+    from spda.model.solucao import Solucao, SolucaoEstrutura
+    from spda.solucao.aplicar import aplicar_solucao
+
+    sol = (Solucao(estruturas={nome_estrutura: parcial})
+           if parcial is not None else None)
+    aplicado, _ = aplicar_solucao(projeto, sol)
+    idx = next((i for i, e in enumerate(projeto.estruturas)
+                if e.nome == nome_estrutura), None)
+    if idx is None:
+        raise ValueError(f"Estrutura inexistente: '{nome_estrutura}'")
+    base = projeto.estruturas[idx]          # so o instalado
+    inicio = aplicado.estruturas[idx]       # instalado + parcial
+
+    res = analisar(aplicado, config)
+    rt_R1 = res.rt["R1"]
+    ft = res.estruturas[idx].ft
+    _, final = _estudar_estrutura(aplicado, inicio, rt_R1, ft, config)
+
+    medidas: dict[str, str] = {}
+    for m in MEDIDAS:
+        i_base = m.indice_atual(base)
+        i_fin = m.indice_atual(final)
+        if i_base is not None and i_fin is not None and i_fin > i_base:
+            medidas[m.id] = m.degrau_str(i_fin)
+    return SolucaoEstrutura(medidas=medidas)

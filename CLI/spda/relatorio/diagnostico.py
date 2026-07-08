@@ -13,10 +13,10 @@ from spda.relatorio.formato import fmt
 
 # Onde atuar para reduzir cada componente dominante de R1.
 _INTERVENCAO = {
-    "R_A": "protecao contra tensao de toque e passo (P_TA)",
-    "R_U": "DPS de equipotencializacao na entrada e protecao de toque (P_U)",
-    "R_B": "SPDA e medidas contra incendio (P_B, r_p)",
-    "R_V": "SPDA, DPS de entrada e medidas contra incendio (P_V)",
+    "R_A": "proteção contra tensão de toque e passo (P_TA)",
+    "R_U": "DPS de equipotencialização na entrada e proteção de toque (P_U)",
+    "R_B": "SPDA e medidas contra incêndio (P_B, r_p)",
+    "R_V": "SPDA, DPS de entrada e medidas contra incêndio (P_V)",
     "R_C": "DPS coordenado e blindagem dos sistemas internos (P_C)",
     "R_M": "blindagem espacial e DPS dos sistemas internos (P_M)",
     "R_W": "DPS coordenado na linha e blindagem (P_W)",
@@ -36,7 +36,7 @@ def _narrativa_estrutura(me: MemoriaEstrutura, mem: Memoria) -> list:
     ]
     if me.dominantes:
         principal = me.dominantes[0][0]
-        onde = _INTERVENCAO.get(principal, "as medidas de protecao aplicaveis")
+        onde = _INTERVENCAO.get(principal, "as medidas de proteção aplicáveis")
         itens = "; ".join(f"{nome} = {fmt(val)}" for nome, val in me.dominantes)
         blocos.append(Paragrafo(
             f"Componentes dominantes de R1: {itens}. Para reduzir R1, "
@@ -45,7 +45,7 @@ def _narrativa_estrutura(me: MemoriaEstrutura, mem: Memoria) -> list:
 
 
 def gerar_diagnostico(mem: Memoria) -> list:
-    blocos: list = [Titulo(2, "Diagnostico por estrutura")]
+    blocos: list = [Titulo(2, "Diagnóstico por estrutura")]
     for me in mem.estruturas:
         blocos += _narrativa_estrutura(me, mem)
     return blocos

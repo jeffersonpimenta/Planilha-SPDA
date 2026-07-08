@@ -1,5 +1,10 @@
+import pytest
+
 from spda.app import analisar
-from spda.solucao.estudo import estudo_solucao
+from spda.model.solucao import Solucao, SolucaoEstrutura
+from spda.solucao.aplicar import aplicar_solucao
+from spda.solucao.catalogo import por_id
+from spda.solucao.estudo import estudo_solucao, sugerir_solucao
 from spda.model.projeto import (
     Projeto, Estrutura, Zona, Linha, Trecho, SistemaInterno,
 )
@@ -94,3 +99,35 @@ def test_estudo_inclui_estrutura_que_so_excede_F():
     e = est_sol.estruturas[0]
     assert e.F_final <= e.F_inicial   # medidas (DPS) reduzem F
     assert e.passos                    # propos ao menos uma medida (DPS)
+
+
+def test_passos_carregam_medida_id():
+    e = estudo_solucao(_projeto_arriscado()).estruturas[0]
+    ids = set(por_id())
+    assert e.passos
+    assert all(p.medida_id in ids for p in e.passos)
+
+
+def test_sugerir_solucao_do_zero_reduz_r1():
+    p = _projeto_arriscado()
+    r1_antes = analisar(p).estruturas[0].R1
+    sugestao = sugerir_solucao(p, "A", None)
+    assert sugestao.medidas  # propos algo
+    aplicado, _ = aplicar_solucao(p, Solucao(estruturas={"A": sugestao}))
+    assert analisar(aplicado).estruturas[0].R1 < r1_antes
+
+
+def test_sugerir_solucao_respeita_parcial():
+    p = _projeto_arriscado()
+    parcial = SolucaoEstrutura(medidas={"spda": "IV"})
+    sugestao = sugerir_solucao(p, "A", parcial)
+    m = por_id()["spda"]
+    # delta e vs INSTALADO (nenhum), entao o parcial deve constar sempre
+    assert "spda" in sugestao.medidas
+    assert (m.indice_de_degrau_str(sugestao.medidas["spda"])
+            >= m.indice_de_degrau_str("IV"))
+
+
+def test_sugerir_solucao_estrutura_inexistente():
+    with pytest.raises(ValueError, match="Estrutura inexistente"):
+        sugerir_solucao(_projeto_arriscado(), "NAO_EXISTE")

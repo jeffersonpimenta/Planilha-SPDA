@@ -14,8 +14,8 @@ from spda.relatorio.formato import fmt
 
 # Campos exigidos para a assinatura da ART (rotulos legiveis).
 _CAMPOS_ASSINATURA = [
-    ("responsavel", "responsavel tecnico"),
-    ("art", "numero da ART"),
+    ("responsavel", "responsável técnico"),
+    ("art", "número da ART"),
     ("registro", "registro CREA"),
     ("data", "data"),
 ]
@@ -25,19 +25,19 @@ def _notas_identificacao(mem: Memoria) -> list[Nota]:
     notas: list[Nota] = []
     if not getattr(mem, "cidade", ""):
         notas.append(Nota("aviso",
-                           "Cidade nao informada: e a base do N_G (tabela de "
-                           "municipios da norma) e deve constar no laudo."))
+                           "Cidade não informada: é a base do N_G (tabela de "
+                           "municípios da norma) e deve constar no laudo."))
     ident = mem.identificacao
     if ident is None:
         notas.append(Nota("aviso",
-                     "Bloco de identificacao ausente: laudo nao assinavel sem "
-                     "responsavel tecnico, ART e registro CREA."))
+                     "Bloco de identificação ausente: laudo não assinável sem "
+                     "responsável técnico, ART e registro CREA."))
         return notas
     faltando = [rotulo for attr, rotulo in _CAMPOS_ASSINATURA
                 if getattr(ident, attr, None) in (None, "")]
     if faltando:
         notas.append(Nota("aviso",
-                     "Identificacao incompleta para assinatura: "
+                     "Identificação incompleta para assinatura: "
                      + ", ".join(faltando) + "."))
     return notas
 
@@ -50,21 +50,21 @@ def _notas_riscos(mem: Memoria) -> list[Nota]:
             ("R1", me.R1.resultado, mem.rt["R1"], "critico",
              "risco de perda de vida humana"),
             ("R3", me.R3.resultado, mem.rt["R3"], "aviso",
-             "risco de perda de patrimonio cultural"),
+             "risco de perda de patrimônio cultural"),
             ("R4", me.R4.resultado, mem.rt["R4"], "aviso",
-             "risco de perda economica"),
+             "risco de perda econômica"),
             ("F", me.F.resultado, me.ft, "aviso",
-             "frequencia de danos toleravel"),
+             "frequência de danos tolerável"),
         ]
         for simbolo, valor, limite, nivel, desc in checagens:
             if riscos.excede(valor, limite):
                 algum_excede = True
                 notas.append(Nota(nivel,
                     f"{me.nome}: {simbolo} = {fmt(valor)} excede o limite "
-                    f"{fmt(limite)} ({desc}). Requer medidas de protecao."))
+                    f"{fmt(limite)} ({desc}). Requer medidas de proteção."))
     if not algum_excede:
         notas.append(Nota("info",
-            "Todos os riscos calculados estao dentro dos limites da norma."))
+            "Todos os riscos calculados estão dentro dos limites da norma."))
     return notas
 
 
@@ -90,12 +90,12 @@ def _notas_r4_metodo(mem: Memoria) -> list[Nota]:
     rt_r4 = fmt(mem.rt.get("R4", 0.0))
     if getattr(mem, "r4_representativo", False):
         return [Nota("info",
-            f"R4 avaliado com R_T representativo (Tabela 4 = {rt_r4}); as razoes "
+            f"R4 avaliado com R_T representativo (Tabela 4 = {rt_r4}); as razões "
             "c/c_t foram adotadas como 1 (nota das Eqs D.1-D.4).")]
     return [Nota("info",
-        "R4 avaliado pelo metodo detalhado do Anexo D (razoes c/c_t). O gate "
-        f"R4 vs {rt_r4} e indicativo; a justificativa economica formal e por "
-        "custo-beneficio (C_L vs C_RL + C_PM).")]
+        "R4 avaliado pelo método detalhado do Anexo D (razões c/c_t). O gate "
+        f"R4 vs {rt_r4} é indicativo; a justificativa econômica formal é por "
+        "custo-benefício (C_L vs C_RL + C_PM).")]
 
 
 def gerar_notas(mem: Memoria) -> list[Nota]:
