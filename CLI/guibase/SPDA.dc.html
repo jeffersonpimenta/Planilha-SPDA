@@ -1,0 +1,1678 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+  <style>
+    @keyframes spda-spin { to { transform: rotate(360deg); } }
+    body { margin: 0; }
+  </style>
+</helmet>
+
+<sc-if value="{{ loading }}" hint-placeholder-val="{{ false }}">
+  <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f3f5f8;font-family:'IBM Plex Sans',sans-serif;color:#647089">
+    <div style="text-align:center">
+      <div style="width:28px;height:28px;border:3px solid #d7dee8;border-top-color:#2354a6;border-radius:50%;margin:0 auto 14px;animation:spda-spin .8s linear infinite"></div>
+      <div style="font:500 14px 'IBM Plex Sans',sans-serif">Carregando motor de cálculo…</div>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ ready }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;min-height:100vh;background:#f3f5f8;font-family:'IBM Plex Sans',sans-serif;color:#1c2530">
+
+  <div style="width:252px;flex-shrink:0;background:#0f1826;color:#e8ecf3;display:flex;flex-direction:column;padding:22px 0;position:sticky;top:0;height:100vh;box-sizing:border-box">
+    <div style="padding:0 22px 18px;border-bottom:1px solid rgba(255,255,255,0.09);margin-bottom:10px">
+      <div style="font:700 15px/1.3 'IBM Plex Sans',sans-serif;color:#fff;letter-spacing:.01em">SPDA · Análise de Risco</div>
+      <div style="font:500 11.5px/1.4 'IBM Plex Mono',monospace;color:#7c8aa3;margin-top:3px">ABNT NBR 5419-2:2026</div>
+    </div>
+    <sc-for list="{{ navItems }}" as="item" hint-placeholder-count="5">
+      <div style="{{ item.style }}" onClick="{{ item.onClick }}">
+        <span>{{ item.label }}</span>
+        <sc-if value="{{ item.hasBadge }}">
+          <span style="{{ item.badgeStyle }}">{{ item.badge }}</span>
+        </sc-if>
+      </div>
+    </sc-for>
+    <div style="flex:1"></div>
+    <div style="padding:14px 22px 0;border-top:1px solid rgba(255,255,255,0.09);margin-top:8px">
+      <div style="font:500 10.5px/1.5 'IBM Plex Sans',sans-serif;color:#5c6883">{{ projetoNome }}</div>
+      <div style="font:400 10.5px/1.5 'IBM Plex Mono',monospace;color:#465066;margin-top:2px">{{ cidadeLabel }}</div>
+    </div>
+  </div>
+
+  <div style="flex:1;min-width:0;display:flex;flex-direction:column">
+
+    <div style="display:flex;flex-direction:column;gap:12px;padding:16px 32px;background:#fff;border-bottom:1px solid #e2e6ed;position:sticky;top:0;z-index:5">
+      <div style="min-width:0">
+        <div style="font:700 17px/1.3 'IBM Plex Sans',sans-serif;color:#101828;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ headerTitulo }}</div>
+        <div style="font:500 12.5px/1.4 'IBM Plex Sans',sans-serif;color:#8892a3;margin-top:2px">{{ headerSubtitulo }}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end">
+        <button onClick="{{ onCarregarJson }}" style="padding:9px 15px;border:1px solid #d7dee8;background:#fff;border-radius:7px;font:600 12.5px 'IBM Plex Sans',sans-serif;color:#3a4453;cursor:pointer">Carregar projeto (.json)</button>
+        <button onClick="{{ onSalvarJson }}" style="padding:9px 15px;border:1px solid #d7dee8;background:#fff;border-radius:7px;font:600 12.5px 'IBM Plex Sans',sans-serif;color:#3a4453;cursor:pointer">Salvar projeto (.json)</button>
+        <button onClick="{{ onExportarRelatorio }}" style="padding:9px 15px;border:1px solid #2354a6;background:#2354a6;border-radius:7px;font:600 12.5px 'IBM Plex Sans',sans-serif;color:#fff;cursor:pointer">Exportar relatório</button>
+        <button onClick="{{ onLoadExample }}" style="padding:9px 15px;border:1px solid #d7dee8;background:#fff;border-radius:7px;font:600 12.5px 'IBM Plex Sans',sans-serif;color:#3a4453;cursor:pointer">Carregar projeto exemplo</button>
+        <button onClick="{{ onNewProject }}" style="padding:9px 15px;border:1px solid #d7dee8;background:#fff;border-radius:7px;font:600 12.5px 'IBM Plex Sans',sans-serif;color:#3a4453;cursor:pointer">Novo projeto</button>
+      </div>
+    </div>
+
+    <div style="flex:1;min-width:0;padding:28px 32px 60px">
+
+      <sc-if value="{{ isProjeto }}">
+        <div style="max-width:760px;display:flex;flex-direction:column;gap:22px">
+
+          <div style="background:#fff;border:1px solid #e2e6ed;border-radius:12px;padding:22px 24px">
+            <div style="font:700 14px 'IBM Plex Sans',sans-serif;color:#101828;margin-bottom:16px">Dados do projeto</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px 18px">
+              <div style="display:flex;flex-direction:column;gap:4px;grid-column:1/-1">
+                <label style="font:600 11px 'IBM Plex Sans',sans-serif;color:#64748b;text-transform:uppercase;letter-spacing:.04em">Nome do projeto</label>
+                <input value="{{ proj.nome }}" onChange="{{ proj.onNome }}" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #d7dce3;border-radius:6px;font:500 14px 'IBM Plex Sans',sans-serif;color:#1e2937">
+              </div>
+              <div style="display:flex;flex-direction:column;gap:4px">
+                <label style="font:600 11px 'IBM Plex Sans',sans-serif;color:#64748b;text-transform:uppercase;letter-spacing:.04em">Cidade / município (N_G)</label>
+                <input value="{{ proj.cidade }}" onChange="{{ proj.onCidade }}" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #d7dce3;border-radius:6px;font:500 14px 'IBM Plex Sans',sans-serif;color:#1e2937">
+              </div>
+              <div style="display:flex;flex-direction:column;gap:4px">
+                <label style="font:600 11px 'IBM Plex Sans',sans-serif;color:#64748b;text-transform:uppercase;letter-spacing:.04em">N_G — densidade de descargas (1/km²·ano)</label>
+                <input type="number" step="0.1" value="{{ proj.N_G }}" onChange="{{ proj.onNG }}" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #d7dce3;border-radius:6px;font:500 14px 'IBM Plex Mono',monospace;color:#1e2937">
+              </div>
+              <div style="display:flex;flex-direction:column;gap:4px">
+                <label style="font:600 11px 'IBM Plex Sans',sans-serif;color:#64748b;text-transform:uppercase;letter-spacing:.04em">S_M — valor econômico anual em risco (R$, opcional)</label>
+                <input type="number" value="{{ proj.S_M }}" onChange="{{ proj.onSM }}" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #d7dce3;border-radius:6px;font:500 14px 'IBM Plex Mono',monospace;color:#1e2937">
+              </div>
+              <label style="display:flex;align-items:center;gap:8px;font:500 13px 'IBM Plex Sans',sans-serif;color:#374151;grid-column:1/-1">
+                <input type="checkbox" checked="{{ proj.r4_representativo }}" onChange="{{ proj.onR4Repr }}">
+                Usar R_T representativo (Tabela 4) para R4 em vez do Anexo D detalhado
+              </label>
+            </div>
+          </div>
+
+          <div style="background:#fff;border:1px solid #e2e6ed;border-radius:12px;padding:22px 24px">
+            <div style="font:700 14px 'IBM Plex Sans',sans-serif;color:#101828;margin-bottom:4px">Riscos e frequências toleráveis</div>
+            <div style="font:400 12.5px 'IBM Plex Sans',sans-serif;color:#8892a3;margin-bottom:16px">Defaults da Tabela 4 / Seção 7.3.4 da norma. Ajuste apenas se houver justificativa técnica.</div>
+            <label style="display:flex;align-items:center;gap:8px;font:500 13px 'IBM Plex Sans',sans-serif;color:#374151;margin-bottom:12px">
+              <input type="checkbox" checked="{{ proj.rtOverrideOn }}" onChange="{{ proj.onRtOverrideToggle }}">
+              Sobrepor R_T padrão
+            </label>
+            <sc-if value="{{ proj.rtOverrideOn }}">
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px">
+                <div style="display:flex;flex-direction:column;gap:4px">
+                  <label style="font:600 11px 'IBM Plex Sans',sans-serif;color:#64748b;text-transform:uppercase">R_T (R1 — vida humana)</label>
+                  <input type="number" step="0.000001" value="{{ proj.rt_R1 }}" onChange="{{ proj.onRtR1 }}" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #d7dce3;border-radius:6px;font:500 13px 'IBM Plex Mono',monospace">
+                </div>
+                <div style="display:flex;flex-direction:column;gap:4px">
+                  <label style="font:600 11px 'IBM Plex Sans',sans-serif;color:#64748b;text-transform:uppercase">R_T (R3 — patrimônio cultural)</label>
+                  <input type="number" step="0.00001" value="{{ proj.rt_R3 }}" onChange="{{ proj.onRtR3 }}" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #d7dce3;border-radius:6px;font:500 13px 'IBM Plex Mono',monospace">
+                </div>
+                <div style="display:flex;flex-direction:column;gap:4px">
+                  <label style="font:600 11px 'IBM Plex Sans',sans-serif;color:#64748b;text-transform:uppercase">R_T (R4 — econômico)</label>
+                  <input type="number" step="0.0001" value="{{ proj.rt_R4 }}" onChange="{{ proj.onRtR4 }}" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #d7dce3;border-radius:6px;font:500 13px 'IBM Plex Mono',monospace">
+                </div>
+              </div>
+            </sc-if>
+            <label style="display:flex;align-items:center;gap:8px;font:500 13px 'IBM Plex Sans',sans-serif;color:#374151;margin-bottom:12px">
+              <input type="checkbox" checked="{{ proj.ftOverrideOn }}" onChange="{{ proj.onFtOverrideToggle }}">
+              Sobrepor F_T (7.3.4 — só autoridade com jurisdição pode elevar acima de sistemas críticos)
+            </label>
+            <sc-if value="{{ proj.ftOverrideOn }}">
+              <div style="display:flex;flex-direction:column;gap:4px;max-width:220px">
+                <label style="font:600 11px 'IBM Plex Sans',sans-serif;color:#64748b;text-transform:uppercase">F_T (eventos/ano)</label>
+                <input type="number" step="0.01" value="{{ proj.ft_override }}" onChange="{{ proj.onFtOverrideVal }}" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #d7dce3;border-radius:6px;font:500 13px 'IBM Plex Mono',monospace">
+              </div>
+            </sc-if>
+          </div>
+
+          <div style="background:#fff;border:1px solid #e2e6ed;border-radius:12px;padding:22px 24px">
+            <div style="font:700 14px 'IBM Plex Sans',sans-serif;color:#101828;margin-bottom:16px">Identificação do laudo</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px 18px">
+              <div style="display:flex;flex-direction:column;gap:4px;grid-column:1/-1">
+                <label style="font:600 11px 'IBM Plex Sans',sans-serif;color:#64748b;text-transform:uppercase">Título</label>
+                <input value="{{ proj.identificacao.titulo }}" onChange="{{ proj.onTitulo }}" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #d7dce3;border-radius:6px;font:500 14px 'IBM Plex Sans',sans-serif">
+              </div>
+              <div style="display:flex;flex-direction:column;gap:4px">
+                <label style="font:600 11px 'IBM Plex Sans',sans-serif;color:#64748b;text-transform:uppercase">Cliente</label>
+                <input value="{{ proj.identificacao.cliente }}" onChange="{{ proj.onCliente }}" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #d7dce3;border-radius:6px;font:500 14px 'IBM Plex Sans',sans-serif">
+              </div>
+              <div style="display:flex;flex-direction:column;gap:4px">
+                <label style="font:600 11px 'IBM Plex Sans',sans-serif;color:#64748b;text-transform:uppercase">Endereço</label>
+                <input value="{{ proj.identificacao.endereco }}" onChange="{{ proj.onEndereco }}" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #d7dce3;border-radius:6px;font:500 14px 'IBM Plex Sans',sans-serif">
+              </div>
+              <div style="display:flex;flex-direction:column;gap:4px">
+                <label style="font:600 11px 'IBM Plex Sans',sans-serif;color:#64748b;text-transform:uppercase">Responsável técnico</label>
+                <input value="{{ proj.identificacao.responsavel }}" onChange="{{ proj.onResponsavel }}" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #d7dce3;border-radius:6px;font:500 14px 'IBM Plex Sans',sans-serif">
+              </div>
+              <div style="display:flex;flex-direction:column;gap:4px">
+                <label style="font:600 11px 'IBM Plex Sans',sans-serif;color:#64748b;text-transform:uppercase">ART</label>
+                <input value="{{ proj.identificacao.art }}" onChange="{{ proj.onArt }}" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #d7dce3;border-radius:6px;font:500 14px 'IBM Plex Mono',monospace">
+              </div>
+              <div style="display:flex;flex-direction:column;gap:4px">
+                <label style="font:600 11px 'IBM Plex Sans',sans-serif;color:#64748b;text-transform:uppercase">Registro (CREA/UF)</label>
+                <input value="{{ proj.identificacao.registro }}" onChange="{{ proj.onRegistro }}" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #d7dce3;border-radius:6px;font:500 14px 'IBM Plex Mono',monospace">
+              </div>
+              <div style="display:flex;flex-direction:column;gap:4px">
+                <label style="font:600 11px 'IBM Plex Sans',sans-serif;color:#64748b;text-transform:uppercase">Data</label>
+                <input type="date" value="{{ proj.identificacao.data }}" onChange="{{ proj.onData }}" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #d7dce3;border-radius:6px;font:500 14px 'IBM Plex Sans',sans-serif">
+              </div>
+              <div style="display:flex;flex-direction:column;gap:4px;grid-column:1/-1">
+                <label style="font:600 11px 'IBM Plex Sans',sans-serif;color:#64748b;text-transform:uppercase">Observações</label>
+                <textarea value="{{ proj.identificacao.observacoes }}" onChange="{{ proj.onObservacoes }}" rows="3" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #d7dce3;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;resize:vertical"></textarea>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isEstruturas }}">
+        <div style="max-width:1000px;display:flex;flex-direction:column;gap:16px">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <div style="font:700 14px 'IBM Plex Sans',sans-serif;color:#101828">Estruturas do projeto</div>
+            <button onClick="{{ onAddEstrutura }}" style="padding:9px 16px;border:none;background:#2354a6;color:#fff;border-radius:7px;font:600 12.5px 'IBM Plex Sans',sans-serif;cursor:pointer">+ Nova estrutura</button>
+          </div>
+
+          <sc-for list="{{ estruturas }}" as="est" hint-placeholder-count="2">
+          <div style="background:#fff;border:1px solid #e2e6ed;border-radius:12px;overflow:hidden">
+            <div onClick="{{ est.onToggle }}" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 20px;cursor:pointer">
+              <div style="display:flex;align-items:center;gap:14px;min-width:0">
+                <span style="{{ est.chevronStyle }}">▶</span>
+                <div style="min-width:0">
+                  <div style="font:600 14px 'IBM Plex Sans',sans-serif;color:#101828;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ est.nome }}</div>
+                  <div style="font:500 12px 'IBM Plex Mono',monospace;color:#8892a3;margin-top:2px">{{ est.L }}×{{ est.W }}×{{ est.H }} m · {{ est.zonasCount }} zona(s) · {{ est.linhasCount }} linha(s)</div>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+                <sc-if value="{{ est.resumo }}">
+                  <span style="{{ est.badgeStyle }}">{{ est.badgeText }}</span>
+                </sc-if>
+                <button onClick="{{ est.onDuplicate }}" style="padding:7px 11px;border:1px solid #d7dee8;background:#fff;border-radius:6px;font:600 11.5px 'IBM Plex Sans',sans-serif;color:#3a4453;cursor:pointer">Duplicar</button>
+                <button onClick="{{ est.onRemove }}" style="padding:7px 11px;border:1px solid #f3c9c4;background:#fff;border-radius:6px;font:600 11.5px 'IBM Plex Sans',sans-serif;color:#c0392b;cursor:pointer">Remover</button>
+              </div>
+            </div>
+
+            <sc-if value="{{ est.expanded }}">
+            <div style="border-top:1px solid #e2e6ed;padding:20px 20px 24px">
+              <div style="display:flex;gap:8px;margin-bottom:20px">
+                <button onClick="{{ est.onSetTabGeral }}" style="{{ est.tabGeralBtnStyle }}">Geral</button>
+                <button onClick="{{ est.onSetTabZonas }}" style="{{ est.tabZonasBtnStyle }}">Zonas ({{ est.zonasCount }})</button>
+                <button onClick="{{ est.onSetTabLinhas }}" style="{{ est.tabLinhasBtnStyle }}">Linhas ({{ est.linhasCount }})</button>
+              </div>
+
+              <sc-if value="{{ est.tabGeral }}">
+              <div style="display:flex;flex-direction:column;gap:16px">
+                <div style="display:flex;flex-direction:column;gap:4px">
+                  <label style="font:600 11px 'IBM Plex Sans',sans-serif;color:#64748b;text-transform:uppercase;letter-spacing:.04em">Nome da estrutura</label>
+                  <input value="{{ est.nome }}" onChange="{{ est.onNome }}" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #d7dce3;border-radius:6px;font:500 14px 'IBM Plex Sans',sans-serif">
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
+                  <div style="display:flex;flex-direction:column;gap:4px">
+                    <label style="font:600 11px 'IBM Plex Sans',sans-serif;color:#64748b;text-transform:uppercase;letter-spacing:.04em">Comprimento L (m)</label>
+                    <input type="number" value="{{ est.L }}" onChange="{{ est.onL }}" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #d7dce3;border-radius:6px;font:500 14px 'IBM Plex Mono',monospace">
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:4px">
+                    <label style="font:600 11px 'IBM Plex Sans',sans-serif;color:#64748b;text-transform:uppercase;letter-spacing:.04em">Largura W (m)</label>
+                    <input type="number" value="{{ est.W }}" onChange="{{ est.onW }}" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #d7dce3;border-radius:6px;font:500 14px 'IBM Plex Mono',monospace">
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:4px">
+                    <label style="font:600 11px 'IBM Plex Sans',sans-serif;color:#64748b;text-transform:uppercase;letter-spacing:.04em">Altura H (m)</label>
+                    <input type="number" value="{{ est.H }}" onChange="{{ est.onH }}" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #d7dce3;border-radius:6px;font:500 14px 'IBM Plex Mono',monospace">
+                  </div>
+                </div>
+                <label style="display:flex;align-items:center;gap:8px;font:500 13px 'IBM Plex Sans',sans-serif;color:#374151">
+                  <input type="checkbox" checked="{{ est.formaComplexa }}" onChange="{{ est.onFormaComplexa }}">
+                  Forma complexa — altura de captação variável (A.2.1.3.2)
+                </label>
+                <sc-if value="{{ est.formaComplexa }}">
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:14px;background:#f8f9fb;border-radius:8px">
+                    <div style="display:flex;flex-direction:column;gap:4px">
+                      <label style="font:600 11px 'IBM Plex Sans',sans-serif;color:#64748b;text-transform:uppercase;letter-spacing:.04em">H mín (m)</label>
+                      <input type="number" value="{{ est.H_min }}" onChange="{{ est.onHMin }}" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #d7dce3;border-radius:6px;font:500 14px 'IBM Plex Mono',monospace;background:#fff">
+                    </div>
+                    <div style="display:flex;flex-direction:column;gap:4px">
+                      <label style="font:600 11px 'IBM Plex Sans',sans-serif;color:#64748b;text-transform:uppercase;letter-spacing:.04em">H máx (m)</label>
+                      <input type="number" value="{{ est.H_max }}" onChange="{{ est.onHMax }}" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #d7dce3;border-radius:6px;font:500 14px 'IBM Plex Mono',monospace;background:#fff">
+                    </div>
+                  </div>
+                </sc-if>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+                  <div style="display:flex;flex-direction:column;gap:4px">
+                    <label style="font:600 11px 'IBM Plex Sans',sans-serif;color:#64748b;text-transform:uppercase;letter-spacing:.04em">Localização relativa (C_D)</label>
+                    <select value="{{ est.localizacao }}" onChange="{{ est.onLocalizacao }}" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #d7dce3;border-radius:6px;font:500 14px 'IBM Plex Sans',sans-serif">
+                      <sc-for list="{{ est.opts.Localizacao }}" as="o" hint-placeholder-count="4"><option value="{{ o.v }}">{{ o.l }}</option></sc-for>
+                    </select>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:4px">
+                    <label style="font:600 11px 'IBM Plex Sans',sans-serif;color:#64748b;text-transform:uppercase;letter-spacing:.04em">Tipo de construção (r_s)</label>
+                    <select value="{{ est.tipo_construcao }}" onChange="{{ est.onTipoConstrucao }}" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #d7dce3;border-radius:6px;font:500 14px 'IBM Plex Sans',sans-serif">
+                      <sc-for list="{{ est.opts.TipoConstrucao }}" as="o" hint-placeholder-count="2"><option value="{{ o.v }}">{{ o.l }}</option></sc-for>
+                    </select>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:4px">
+                    <label style="font:600 11px 'IBM Plex Sans',sans-serif;color:#64748b;text-transform:uppercase;letter-spacing:.04em">Risco de incêndio (r_f)</label>
+                    <select value="{{ est.risco_incendio }}" onChange="{{ est.onRiscoIncendio }}" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #d7dce3;border-radius:6px;font:500 14px 'IBM Plex Sans',sans-serif">
+                      <sc-for list="{{ est.opts.RiscoIncendio }}" as="o" hint-placeholder-count="4"><option value="{{ o.v }}">{{ o.l }}</option></sc-for>
+                    </select>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:4px">
+                    <label style="font:600 11px 'IBM Plex Sans',sans-serif;color:#64748b;text-transform:uppercase;letter-spacing:.04em">Providências contra incêndio (r_p)</label>
+                    <select value="{{ est.providencias_incendio }}" onChange="{{ est.onProvidenciasIncendio }}" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #d7dce3;border-radius:6px;font:500 14px 'IBM Plex Sans',sans-serif">
+                      <sc-for list="{{ est.opts.ProvidenciaIncendio }}" as="o" hint-placeholder-count="3"><option value="{{ o.v }}">{{ o.l }}</option></sc-for>
+                    </select>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:4px">
+                    <label style="font:600 11px 'IBM Plex Sans',sans-serif;color:#64748b;text-transform:uppercase;letter-spacing:.04em">Ocupação / uso (L_F)</label>
+                    <select value="{{ est.ocupacao }}" onChange="{{ est.onOcupacao }}" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #d7dce3;border-radius:6px;font:500 14px 'IBM Plex Sans',sans-serif">
+                      <sc-for list="{{ est.opts.TipoOcupacao }}" as="o" hint-placeholder-count="10"><option value="{{ o.v }}">{{ o.l }}</option></sc-for>
+                    </select>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:4px">
+                    <label style="font:600 11px 'IBM Plex Sans',sans-serif;color:#64748b;text-transform:uppercase;letter-spacing:.04em">Zona de atmosfera explosiva (r_f, r_p=1)</label>
+                    <select value="{{ est.zona_explosao }}" onChange="{{ est.onZonaExplosao }}" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #d7dce3;border-radius:6px;font:500 14px 'IBM Plex Sans',sans-serif">
+                      <sc-for list="{{ est.opts.ZonaExplosao }}" as="o" hint-placeholder-count="4"><option value="{{ o.v }}">{{ o.l }}</option></sc-for>
+                    </select>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:4px">
+                    <label style="font:600 11px 'IBM Plex Sans',sans-serif;color:#64748b;text-transform:uppercase;letter-spacing:.04em">Nível de proteção do SPDA (P_B)</label>
+                    <select value="{{ est.nivel_spda }}" onChange="{{ est.onNivelSpda }}" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #d7dce3;border-radius:6px;font:500 14px 'IBM Plex Sans',sans-serif">
+                      <option value="">Sem SPDA</option>
+                      <sc-for list="{{ est.opts.NivelProtecao }}" as="o" hint-placeholder-count="6">
+                        <sc-if value="{{ o.v }}"><option value="{{ o.v }}">{{ o.l }}</option></sc-if>
+                      </sc-for>
+                    </select>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:4px">
+                    <label style="font:600 11px 'IBM Plex Sans',sans-serif;color:#64748b;text-transform:uppercase;letter-spacing:.04em">Pessoas na estrutura (n_t)</label>
+                    <input type="number" value="{{ est.n_t }}" onChange="{{ est.onNT }}" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #d7dce3;border-radius:6px;font:500 14px 'IBM Plex Mono',monospace">
+                  </div>
+                </div>
+                <div style="display:flex;gap:24px">
+                  <label style="display:flex;align-items:center;gap:8px;font:500 13px 'IBM Plex Sans',sans-serif;color:#374151">
+                    <input type="checkbox" checked="{{ est.risco_explosao }}" onChange="{{ est.onRiscoExplosao }}">
+                    Risco de explosão (legado, pior caso se zona acima = nenhuma)
+                  </label>
+                  <label style="display:flex;align-items:center;gap:8px;font:500 13px 'IBM Plex Sans',sans-serif;color:#374151">
+                    <input type="checkbox" checked="{{ est.sistemas_criticos }}" onChange="{{ est.onSistemasCriticos }}">
+                    Sistemas críticos (F_T = 0,1/ano; entra D3 em R1)
+                  </label>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:4px;max-width:280px">
+                  <label style="font:600 11px 'IBM Plex Sans',sans-serif;color:#64748b;text-transform:uppercase;letter-spacing:.04em">Valor total exposto — c_t (R$, para L3/L4)</label>
+                  <input type="number" value="{{ est.c_t }}" onChange="{{ est.onCT }}" placeholder="deixe vazio p/ não avaliar L3/L4" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #d7dce3;border-radius:6px;font:500 14px 'IBM Plex Mono',monospace">
+                </div>
+              </div>
+              </sc-if>
+
+              <sc-if value="{{ est.tabZonas }}">
+              <div style="display:flex;flex-direction:column;gap:12px">
+                <div style="display:flex;align-items:center;justify-content:space-between">
+                  <div style="font:600 12.5px 'IBM Plex Sans',sans-serif;color:#64748b;text-transform:uppercase;letter-spacing:.03em">Zonas de proteção (ZPR)</div>
+                  <button onClick="{{ est.onAddZona }}" style="padding:7px 13px;border:1px solid #d7dee8;background:#fff;border-radius:6px;font:600 12px 'IBM Plex Sans',sans-serif;color:#2354a6;cursor:pointer">+ Nova zona</button>
+                </div>
+
+                <sc-for list="{{ est.zonas }}" as="z" hint-placeholder-count="1">
+                <div style="background:#f8f9fb;border:1px solid #e6e9ef;border-radius:10px;overflow:hidden">
+                  <div onClick="{{ z.onToggle }}" style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;cursor:pointer">
+                    <div style="display:flex;align-items:center;gap:10px;min-width:0">
+                      <span style="{{ z.chevronStyle }}">▶</span>
+                      <div style="font:600 13px 'IBM Plex Sans',sans-serif;color:#101828;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ z.nome }}</div>
+                      <div style="font:500 11.5px 'IBM Plex Mono',monospace;color:#8892a3">{{ z.n_z }} pessoas · {{ z.t_z }} h/ano</div>
+                    </div>
+                    <button onClick="{{ z.onRemove }}" style="padding:6px 10px;border:1px solid #f3c9c4;background:#fff;border-radius:6px;font:600 11px 'IBM Plex Sans',sans-serif;color:#c0392b;cursor:pointer;flex-shrink:0">Remover</button>
+                  </div>
+                  <sc-if value="{{ z.expanded }}">
+                  <div style="padding:16px;border-top:1px solid #e6e9ef;background:#fff;display:flex;flex-direction:column;gap:14px">
+                    <div style="display:flex;flex-direction:column;gap:4px">
+                      <label style="font:600 11px 'IBM Plex Sans',sans-serif;color:#64748b;text-transform:uppercase;letter-spacing:.04em">Nome da zona</label>
+                      <input value="{{ z.nome }}" onChange="{{ z.onNome }}" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #d7dce3;border-radius:6px;font:500 13.5px 'IBM Plex Sans',sans-serif">
+                    </div>
+                    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+                      <div style="display:flex;flex-direction:column;gap:4px">
+                        <label style="font:600 11px 'IBM Plex Sans',sans-serif;color:#64748b;text-transform:uppercase;letter-spacing:.04em">Superfície (r_t)</label>
+                        <select value="{{ z.superficie }}" onChange="{{ z.onSuperficie }}" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #d7dce3;border-radius:6px;font:500 13.5px 'IBM Plex Sans',sans-serif">
+                          <sc-for list="{{ z.opts.TipoSuperficie }}" as="o" hint-placeholder-count="4"><option value="{{ o.v }}">{{ o.l }}</option></sc-for>
+                        </select>
+                      </div>
+                      <div style="display:flex;flex-direction:column;gap:4px">
+                        <label style="font:600 11px 'IBM Plex Sans',sans-serif;color:#64748b;text-transform:uppercase;letter-spacing:.04em">Pessoas na zona (n_z)</label>
+                        <input type="number" value="{{ z.n_z }}" onChange="{{ z.onNZ }}" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #d7dce3;border-radius:6px;font:500 13.5px 'IBM Plex Mono',monospace">
+                      </div>
+                      <div style="display:flex;flex-direction:column;gap:4px">
+                        <label style="font:600 11px 'IBM Plex Sans',sans-serif;color:#64748b;text-transform:uppercase;letter-spacing:.04em">Horas de presença/ano (t_z)</label>
+                        <input type="number" value="{{ z.t_z }}" onChange="{{ z.onTZ }}" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #d7dce3;border-radius:6px;font:500 13.5px 'IBM Plex Mono',monospace">
+                      </div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+                      <div style="display:flex;flex-direction:column;gap:4px">
+                        <label style="font:600 11px 'IBM Plex Sans',sans-serif;color:#64748b;text-transform:uppercase;letter-spacing:.04em">Perigo especial (h_z)</label>
+                        <select onChange="{{ z.onHZPreset }}" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #d7dce3;border-radius:6px;font:500 13.5px 'IBM Plex Sans',sans-serif">
+                          <option value="">— escolher preset —</option>
+                          <sc-for list="{{ z.opts.PerigoEspecial }}" as="o" hint-placeholder-count="5"><option value="{{ o.v }}">{{ o.l }}</option></sc-for>
+                        </select>
+                      </div>
+                      <div style="display:flex;flex-direction:column;gap:4px">
+                        <label style="font:600 11px 'IBM Plex Sans',sans-serif;color:#64748b;text-transform:uppercase;letter-spacing:.04em">h_z (valor)</label>
+                        <input type="number" value="{{ z.h_z }}" onChange="{{ z.onHZ }}" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #d7dce3;border-radius:6px;font:500 13.5px 'IBM Plex Mono',monospace">
+                      </div>
+                      <div style="display:flex;flex-direction:column;gap:4px">
+                        <label style="font:600 11px 'IBM Plex Sans',sans-serif;color:#64748b;text-transform:uppercase;letter-spacing:.04em">Proteção toque/passo (P_TA)</label>
+                        <select value="{{ z.protecao_toque_passo }}" onChange="{{ z.onProtecaoToquePasso }}" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #d7dce3;border-radius:6px;font:500 13.5px 'IBM Plex Sans',sans-serif">
+                          <sc-for list="{{ z.opts.ProtecaoToquePasso }}" as="o" hint-placeholder-count="6"><option value="{{ o.v }}">{{ o.l }}</option></sc-for>
+                        </select>
+                      </div>
+                    </div>
+                    <div style="display:flex;flex-direction:column;gap:4px;max-width:320px">
+                      <label style="font:600 11px 'IBM Plex Sans',sans-serif;color:#64748b;text-transform:uppercase;letter-spacing:.04em">Relevância da área de captação</label>
+                      <select value="{{ z.relevancia_AD }}" onChange="{{ z.onRelevancia }}" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #d7dce3;border-radius:6px;font:500 13.5px 'IBM Plex Sans',sans-serif">
+                        <sc-for list="{{ z.opts.RelevanciaAD }}" as="o" hint-placeholder-count="3"><option value="{{ o.v }}">{{ o.l }}</option></sc-for>
+                      </select>
+                    </div>
+
+                    <div style="border-top:1px dashed #d7dce3;padding-top:12px">
+                      <div style="font:600 11.5px 'IBM Plex Sans',sans-serif;color:#64748b;margin-bottom:8px">Patrimônio cultural e valor econômico da zona (L3/L4 — só entram se a estrutura tiver c_t definido)</div>
+                      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px">
+                        <div style="display:flex;flex-direction:column;gap:4px">
+                          <label style="font:600 10.5px 'IBM Plex Sans',sans-serif;color:#8892a3;text-transform:uppercase">c_z patrimônio</label>
+                          <input type="number" value="{{ z.c_z }}" onChange="{{ z.onCZ }}" style="width:100%;box-sizing:border-box;padding:8px 9px;border:1px solid #d7dce3;border-radius:6px;font:500 12.5px 'IBM Plex Mono',monospace">
+                        </div>
+                        <div style="display:flex;flex-direction:column;gap:4px">
+                          <label style="font:600 10.5px 'IBM Plex Sans',sans-serif;color:#8892a3;text-transform:uppercase">c_a animais</label>
+                          <input type="number" value="{{ z.c_a }}" onChange="{{ z.onCA }}" style="width:100%;box-sizing:border-box;padding:8px 9px;border:1px solid #d7dce3;border-radius:6px;font:500 12.5px 'IBM Plex Mono',monospace">
+                        </div>
+                        <div style="display:flex;flex-direction:column;gap:4px">
+                          <label style="font:600 10.5px 'IBM Plex Sans',sans-serif;color:#8892a3;text-transform:uppercase">c_b edificação</label>
+                          <input type="number" value="{{ z.c_b }}" onChange="{{ z.onCB }}" style="width:100%;box-sizing:border-box;padding:8px 9px;border:1px solid #d7dce3;border-radius:6px;font:500 12.5px 'IBM Plex Mono',monospace">
+                        </div>
+                        <div style="display:flex;flex-direction:column;gap:4px">
+                          <label style="font:600 10.5px 'IBM Plex Sans',sans-serif;color:#8892a3;text-transform:uppercase">c_c conteúdo</label>
+                          <input type="number" value="{{ z.c_c }}" onChange="{{ z.onCC }}" style="width:100%;box-sizing:border-box;padding:8px 9px;border:1px solid #d7dce3;border-radius:6px;font:500 12.5px 'IBM Plex Mono',monospace">
+                        </div>
+                        <div style="display:flex;flex-direction:column;gap:4px">
+                          <label style="font:600 10.5px 'IBM Plex Sans',sans-serif;color:#8892a3;text-transform:uppercase">c_s sistemas</label>
+                          <input type="number" value="{{ z.c_s }}" onChange="{{ z.onCS }}" style="width:100%;box-sizing:border-box;padding:8px 9px;border:1px solid #d7dce3;border-radius:6px;font:500 12.5px 'IBM Plex Mono',monospace">
+                        </div>
+                      </div>
+                    </div>
+
+                    <div style="border-top:1px dashed #d7dce3;padding-top:12px">
+                      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                        <div style="font:600 11.5px 'IBM Plex Sans',sans-serif;color:#64748b">Sistemas internos desta zona</div>
+                        <button onClick="{{ z.onAddSistema }}" style="padding:6px 11px;border:1px solid #d7dee8;background:#fff;border-radius:6px;font:600 11.5px 'IBM Plex Sans',sans-serif;color:#2354a6;cursor:pointer">+ Sistema</button>
+                      </div>
+                      <sc-for list="{{ z.sistemas }}" as="sis" hint-placeholder-count="1">
+                        <div style="background:#f8f9fb;border:1px solid #e6e9ef;border-radius:8px;padding:12px 14px;margin-bottom:8px;display:flex;flex-direction:column;gap:10px">
+                          <div style="display:flex;align-items:center;gap:10px">
+                            <input value="{{ sis.nome }}" onChange="{{ sis.onNome }}" style="flex:1;box-sizing:border-box;padding:8px 10px;border:1px solid #d7dce3;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;background:#fff">
+                            <button onClick="{{ sis.onRemove }}" style="padding:6px 10px;border:1px solid #f3c9c4;background:#fff;border-radius:6px;font:600 11px 'IBM Plex Sans',sans-serif;color:#c0392b;cursor:pointer;flex-shrink:0">Remover</button>
+                          </div>
+                          <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px">
+                            <div style="display:flex;flex-direction:column;gap:3px">
+                              <label style="font:600 10px 'IBM Plex Sans',sans-serif;color:#8892a3;text-transform:uppercase">U_W (kV)</label>
+                              <input type="number" value="{{ sis.U_W }}" onChange="{{ sis.onUW }}" placeholder="desconh." style="width:100%;box-sizing:border-box;padding:7px 8px;border:1px solid #d7dce3;border-radius:6px;font:500 12px 'IBM Plex Mono',monospace;background:#fff">
+                            </div>
+                            <div style="display:flex;flex-direction:column;gap:3px">
+                              <label style="font:600 10px 'IBM Plex Sans',sans-serif;color:#8892a3;text-transform:uppercase">K_S1</label>
+                              <input type="number" value="{{ sis.K_S1 }}" onChange="{{ sis.onKS1 }}" style="width:100%;box-sizing:border-box;padding:7px 8px;border:1px solid #d7dce3;border-radius:6px;font:500 12px 'IBM Plex Mono',monospace;background:#fff">
+                            </div>
+                            <div style="display:flex;flex-direction:column;gap:3px">
+                              <label style="font:600 10px 'IBM Plex Sans',sans-serif;color:#8892a3;text-transform:uppercase">K_S2</label>
+                              <input type="number" value="{{ sis.K_S2 }}" onChange="{{ sis.onKS2 }}" style="width:100%;box-sizing:border-box;padding:7px 8px;border:1px solid #d7dce3;border-radius:6px;font:500 12px 'IBM Plex Mono',monospace;background:#fff">
+                            </div>
+                            <div style="display:flex;flex-direction:column;gap:3px">
+                              <label style="font:600 10px 'IBM Plex Sans',sans-serif;color:#8892a3;text-transform:uppercase">K_S3</label>
+                              <input type="number" value="{{ sis.K_S3 }}" onChange="{{ sis.onKS3 }}" style="width:100%;box-sizing:border-box;padding:7px 8px;border:1px solid #d7dce3;border-radius:6px;font:500 12px 'IBM Plex Mono',monospace;background:#fff">
+                            </div>
+                            <div style="display:flex;flex-direction:column;gap:3px">
+                              <label style="font:600 10px 'IBM Plex Sans',sans-serif;color:#8892a3;text-transform:uppercase">K_S4 (override)</label>
+                              <input type="number" value="{{ sis.K_S4 }}" onChange="{{ sis.onKS4 }}" placeholder="=1/U_W" style="width:100%;box-sizing:border-box;padding:7px 8px;border:1px solid #d7dce3;border-radius:6px;font:500 12px 'IBM Plex Mono',monospace;background:#fff">
+                            </div>
+                          </div>
+                          <div style="display:flex;flex-direction:column;gap:3px">
+                            <label style="font:600 10px 'IBM Plex Sans',sans-serif;color:#8892a3;text-transform:uppercase">Preset K_S3 — fiação interna (Tabela B.5)</label>
+                            <select onChange="{{ sis.onKS3Preset }}" style="width:100%;box-sizing:border-box;padding:7px 8px;border:1px solid #d7dce3;border-radius:6px;font:500 12px 'IBM Plex Sans',sans-serif;background:#fff">
+                              <option value="">— escolher preset —</option>
+                              <sc-for list="{{ sis.opts.FiacaoInterna }}" as="o" hint-placeholder-count="5"><option value="{{ o.v }}">{{ o.l }}</option></sc-for>
+                            </select>
+                          </div>
+                          <div style="display:flex;align-items:flex-end;gap:14px">
+                            <div style="display:flex;flex-direction:column;gap:3px;flex:1">
+                              <label style="font:600 10px 'IBM Plex Sans',sans-serif;color:#8892a3;text-transform:uppercase">DPS coordenado (P_SPD)</label>
+                              <select value="{{ sis.dps }}" onChange="{{ sis.onDps }}" style="width:100%;box-sizing:border-box;padding:7px 8px;border:1px solid #d7dce3;border-radius:6px;font:500 12px 'IBM Plex Sans',sans-serif;background:#fff">
+                                <option value="">Sem DPS</option>
+                                <sc-for list="{{ sis.opts.NivelDPS }}" as="o" hint-placeholder-count="5"><option value="{{ o.v }}">{{ o.l }}</option></sc-for>
+                              </select>
+                            </div>
+                            <label style="display:flex;align-items:center;gap:6px;font:500 12px 'IBM Plex Sans',sans-serif;color:#374151;white-space:nowrap;padding-bottom:8px">
+                              <input type="checkbox" checked="{{ sis.em_zpr0a }}" onChange="{{ sis.onZpr0a }}">
+                              Equip. isolado em ZPR 0A
+                            </label>
+                          </div>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </div>
+                  </sc-if>
+                </div>
+                </sc-for>
+              </div>
+              </sc-if>
+
+              <sc-if value="{{ est.tabLinhas }}">
+              <div style="display:flex;flex-direction:column;gap:12px">
+                <div style="display:flex;align-items:center;justify-content:space-between">
+                  <div style="font:600 12.5px 'IBM Plex Sans',sans-serif;color:#64748b;text-transform:uppercase;letter-spacing:.03em">Linhas conectadas</div>
+                  <button onClick="{{ est.onAddLinha }}" style="padding:7px 13px;border:1px solid #d7dee8;background:#fff;border-radius:6px;font:600 12px 'IBM Plex Sans',sans-serif;color:#2354a6;cursor:pointer">+ Nova linha</button>
+                </div>
+
+                <sc-for list="{{ est.linhas }}" as="ln" hint-placeholder-count="1">
+                <div style="background:#f8f9fb;border:1px solid #e6e9ef;border-radius:10px;overflow:hidden">
+                  <div onClick="{{ ln.onToggle }}" style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;cursor:pointer">
+                    <div style="display:flex;align-items:center;gap:10px;min-width:0">
+                      <span style="{{ ln.chevronStyle }}">▶</span>
+                      <div style="font:600 13px 'IBM Plex Sans',sans-serif;color:#101828;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ ln.nome }}</div>
+                      <div style="font:500 11.5px 'IBM Plex Mono',monospace;color:#8892a3">{{ ln.trechos.length }} trecho(s)</div>
+                    </div>
+                    <button onClick="{{ ln.onRemove }}" style="padding:6px 10px;border:1px solid #f3c9c4;background:#fff;border-radius:6px;font:600 11px 'IBM Plex Sans',sans-serif;color:#c0392b;cursor:pointer;flex-shrink:0">Remover</button>
+                  </div>
+                  <sc-if value="{{ ln.expanded }}">
+                  <div style="padding:16px;border-top:1px solid #e6e9ef;background:#fff;display:flex;flex-direction:column;gap:14px">
+                    <div style="display:flex;flex-direction:column;gap:4px">
+                      <label style="font:600 11px 'IBM Plex Sans',sans-serif;color:#64748b;text-transform:uppercase;letter-spacing:.04em">Nome da linha</label>
+                      <input value="{{ ln.nome }}" onChange="{{ ln.onNome }}" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #d7dce3;border-radius:6px;font:500 13.5px 'IBM Plex Sans',sans-serif">
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                      <div style="display:flex;flex-direction:column;gap:4px">
+                        <label style="font:600 11px 'IBM Plex Sans',sans-serif;color:#64748b;text-transform:uppercase;letter-spacing:.04em">Tipo (C_T)</label>
+                        <select value="{{ ln.tipo }}" onChange="{{ ln.onTipo }}" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #d7dce3;border-radius:6px;font:500 13.5px 'IBM Plex Sans',sans-serif">
+                          <sc-for list="{{ ln.opts.TipoLinha }}" as="o" hint-placeholder-count="2"><option value="{{ o.v }}">{{ o.l }}</option></sc-for>
+                        </select>
+                      </div>
+                      <div style="display:flex;flex-direction:column;gap:4px">
+                        <label style="font:600 11px 'IBM Plex Sans',sans-serif;color:#64748b;text-transform:uppercase;letter-spacing:.04em">Categoria (P_LI)</label>
+                        <select value="{{ ln.categoria }}" onChange="{{ ln.onCategoria }}" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #d7dce3;border-radius:6px;font:500 13.5px 'IBM Plex Sans',sans-serif">
+                          <sc-for list="{{ ln.opts.CategoriaLinha }}" as="o" hint-placeholder-count="2"><option value="{{ o.v }}">{{ o.l }}</option></sc-for>
+                        </select>
+                      </div>
+                      <div style="display:flex;flex-direction:column;gap:4px">
+                        <label style="font:600 11px 'IBM Plex Sans',sans-serif;color:#64748b;text-transform:uppercase;letter-spacing:.04em">Instalação padrão (C_I)</label>
+                        <select value="{{ ln.instalacao }}" onChange="{{ ln.onInstalacao }}" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #d7dce3;border-radius:6px;font:500 13.5px 'IBM Plex Sans',sans-serif">
+                          <sc-for list="{{ ln.opts.InstalacaoLinha }}" as="o" hint-placeholder-count="3"><option value="{{ o.v }}">{{ o.l }}</option></sc-for>
+                        </select>
+                      </div>
+                      <div style="display:flex;flex-direction:column;gap:4px">
+                        <label style="font:600 11px 'IBM Plex Sans',sans-serif;color:#64748b;text-transform:uppercase;letter-spacing:.04em">Ambiente padrão (C_E)</label>
+                        <select value="{{ ln.ambiente }}" onChange="{{ ln.onAmbiente }}" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #d7dce3;border-radius:6px;font:500 13.5px 'IBM Plex Sans',sans-serif">
+                          <sc-for list="{{ ln.opts.AmbienteLinha }}" as="o" hint-placeholder-count="4"><option value="{{ o.v }}">{{ o.l }}</option></sc-for>
+                        </select>
+                      </div>
+                      <div style="display:flex;flex-direction:column;gap:4px;grid-column:1/-1">
+                        <label style="font:600 11px 'IBM Plex Sans',sans-serif;color:#64748b;text-transform:uppercase;letter-spacing:.04em">Tipo de linha externa (C_LD / C_LI)</label>
+                        <select value="{{ ln.tipo_externa }}" onChange="{{ ln.onTipoExterna }}" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #d7dce3;border-radius:6px;font:500 13.5px 'IBM Plex Sans',sans-serif">
+                          <sc-for list="{{ ln.opts.TipoLinhaExterna }}" as="o" hint-placeholder-count="9"><option value="{{ o.v }}">{{ o.l }}</option></sc-for>
+                        </select>
+                      </div>
+                      <div style="display:flex;flex-direction:column;gap:4px">
+                        <label style="font:600 11px 'IBM Plex Sans',sans-serif;color:#64748b;text-transform:uppercase;letter-spacing:.04em">Blindagem/RS do cabo (P_LD)</label>
+                        <select value="{{ ln.classe_blindagem }}" onChange="{{ ln.onClasseBlindagem }}" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #d7dce3;border-radius:6px;font:500 13.5px 'IBM Plex Sans',sans-serif">
+                          <sc-for list="{{ ln.opts.ClasseBlindagemRS }}" as="o" hint-placeholder-count="4"><option value="{{ o.v }}">{{ o.l }}</option></sc-for>
+                        </select>
+                      </div>
+                      <div style="display:flex;flex-direction:column;gap:4px">
+                        <label style="font:600 11px 'IBM Plex Sans',sans-serif;color:#64748b;text-transform:uppercase;letter-spacing:.04em">DPS de equalização na entrada (P_EB)</label>
+                        <select value="{{ ln.nivel_eb }}" onChange="{{ ln.onNivelEb }}" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #d7dce3;border-radius:6px;font:500 13.5px 'IBM Plex Sans',sans-serif">
+                          <option value="">Sem DPS de entrada</option>
+                          <sc-for list="{{ ln.opts.NivelDPS }}" as="o" hint-placeholder-count="5"><option value="{{ o.v }}">{{ o.l }}</option></sc-for>
+                        </select>
+                      </div>
+                      <div style="display:flex;flex-direction:column;gap:4px">
+                        <label style="font:600 11px 'IBM Plex Sans',sans-serif;color:#64748b;text-transform:uppercase;letter-spacing:.04em">Proteção toque na entrada (P_TU)</label>
+                        <select value="{{ ln.protecao_toque_entrada }}" onChange="{{ ln.onProtecaoEntrada }}" style="width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #d7dce3;border-radius:6px;font:500 13.5px 'IBM Plex Sans',sans-serif">
+                          <sc-for list="{{ ln.opts.ProtecaoToqueEntrada }}" as="o" hint-placeholder-count="4"><option value="{{ o.v }}">{{ o.l }}</option></sc-for>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div style="border-top:1px dashed #d7dce3;padding-top:12px">
+                      <label style="display:flex;align-items:center;gap:8px;font:500 13px 'IBM Plex Sans',sans-serif;color:#374151;margin-bottom:10px">
+                        <input type="checkbox" checked="{{ ln.temAdjacente }}" onChange="{{ ln.onToggleAdjacente }}">
+                        Linha conecta a uma estrutura adjacente (Seção 9.1 — N_DJ)
+                      </label>
+                      <sc-if value="{{ ln.temAdjacente }}">
+                        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:12px;background:#f8f9fb;border-radius:8px">
+                          <div style="display:flex;flex-direction:column;gap:3px">
+                            <label style="font:600 10px 'IBM Plex Sans',sans-serif;color:#8892a3;text-transform:uppercase">L_J (m)</label>
+                            <input type="number" value="{{ ln.adjacente.L_J }}" onChange="{{ ln.onAdjLJ }}" style="width:100%;box-sizing:border-box;padding:7px 8px;border:1px solid #d7dce3;border-radius:6px;font:500 12px 'IBM Plex Mono',monospace;background:#fff">
+                          </div>
+                          <div style="display:flex;flex-direction:column;gap:3px">
+                            <label style="font:600 10px 'IBM Plex Sans',sans-serif;color:#8892a3;text-transform:uppercase">W_J (m)</label>
+                            <input type="number" value="{{ ln.adjacente.W_J }}" onChange="{{ ln.onAdjWJ }}" style="width:100%;box-sizing:border-box;padding:7px 8px;border:1px solid #d7dce3;border-radius:6px;font:500 12px 'IBM Plex Mono',monospace;background:#fff">
+                          </div>
+                          <div style="display:flex;flex-direction:column;gap:3px">
+                            <label style="font:600 10px 'IBM Plex Sans',sans-serif;color:#8892a3;text-transform:uppercase">H_J (m)</label>
+                            <input type="number" value="{{ ln.adjacente.H_J }}" onChange="{{ ln.onAdjHJ }}" style="width:100%;box-sizing:border-box;padding:7px 8px;border:1px solid #d7dce3;border-radius:6px;font:500 12px 'IBM Plex Mono',monospace;background:#fff">
+                          </div>
+                          <div style="display:flex;flex-direction:column;gap:3px">
+                            <label style="font:600 10px 'IBM Plex Sans',sans-serif;color:#8892a3;text-transform:uppercase">Localização</label>
+                            <select value="{{ ln.adjacente.localizacao_J }}" onChange="{{ ln.onAdjLocalizacao }}" style="width:100%;box-sizing:border-box;padding:7px 8px;border:1px solid #d7dce3;border-radius:6px;font:500 12px 'IBM Plex Sans',sans-serif;background:#fff">
+                              <sc-for list="{{ ln.opts.Localizacao }}" as="o" hint-placeholder-count="4"><option value="{{ o.v }}">{{ o.l }}</option></sc-for>
+                            </select>
+                          </div>
+                        </div>
+                      </sc-if>
+                    </div>
+
+                    <div style="border-top:1px dashed #d7dce3;padding-top:12px">
+                      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                        <div style="font:600 11.5px 'IBM Plex Sans',sans-serif;color:#64748b">Trechos da linha</div>
+                        <button onClick="{{ ln.onAddTrecho }}" style="padding:6px 11px;border:1px solid #d7dee8;background:#fff;border-radius:6px;font:600 11.5px 'IBM Plex Sans',sans-serif;color:#2354a6;cursor:pointer">+ Trecho</button>
+                      </div>
+                      <sc-for list="{{ ln.trechos }}" as="tr" hint-placeholder-count="1">
+                        <div style="background:#f8f9fb;border:1px solid #e6e9ef;border-radius:8px;padding:12px 14px;margin-bottom:8px;display:flex;flex-direction:column;gap:10px">
+                          <div style="display:flex;align-items:center;justify-content:space-between">
+                            <div style="font:600 12px 'IBM Plex Sans',sans-serif;color:#3a4453">{{ tr.nome }}</div>
+                            <sc-if value="{{ tr.canRemove }}">
+                              <button onClick="{{ tr.onRemove }}" style="padding:5px 9px;border:1px solid #f3c9c4;background:#fff;border-radius:6px;font:600 10.5px 'IBM Plex Sans',sans-serif;color:#c0392b;cursor:pointer">Remover</button>
+                            </sc-if>
+                          </div>
+                          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
+                            <div style="display:flex;flex-direction:column;gap:3px">
+                              <label style="font:600 10px 'IBM Plex Sans',sans-serif;color:#8892a3;text-transform:uppercase">Comprimento L_L (m)</label>
+                              <input type="number" value="{{ tr.L_L }}" onChange="{{ tr.onLL }}" style="width:100%;box-sizing:border-box;padding:7px 8px;border:1px solid #d7dce3;border-radius:6px;font:500 12px 'IBM Plex Mono',monospace;background:#fff">
+                            </div>
+                            <div style="display:flex;flex-direction:column;gap:3px">
+                              <label style="font:600 10px 'IBM Plex Sans',sans-serif;color:#8892a3;text-transform:uppercase">Resistividade do solo ρ (Ω·m)</label>
+                              <input type="number" value="{{ tr.rho }}" onChange="{{ tr.onRho }}" placeholder="opcional" style="width:100%;box-sizing:border-box;padding:7px 8px;border:1px solid #d7dce3;border-radius:6px;font:500 12px 'IBM Plex Mono',monospace;background:#fff">
+                            </div>
+                          </div>
+                          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+                            <div style="display:flex;flex-direction:column;gap:3px">
+                              <label style="font:600 10px 'IBM Plex Sans',sans-serif;color:#8892a3;text-transform:uppercase">Instalação (override)</label>
+                              <select value="{{ tr.instalacao }}" onChange="{{ tr.onInstalacao }}" style="width:100%;box-sizing:border-box;padding:7px 8px;border:1px solid #d7dce3;border-radius:6px;font:500 12px 'IBM Plex Sans',sans-serif;background:#fff">
+                                <option value="">usar da linha</option>
+                                <sc-for list="{{ tr.opts.InstalacaoLinha }}" as="o" hint-placeholder-count="3"><option value="{{ o.v }}">{{ o.l }}</option></sc-for>
+                              </select>
+                            </div>
+                            <div style="display:flex;flex-direction:column;gap:3px">
+                              <label style="font:600 10px 'IBM Plex Sans',sans-serif;color:#8892a3;text-transform:uppercase">Ambiente (override)</label>
+                              <select value="{{ tr.ambiente }}" onChange="{{ tr.onAmbiente }}" style="width:100%;box-sizing:border-box;padding:7px 8px;border:1px solid #d7dce3;border-radius:6px;font:500 12px 'IBM Plex Sans',sans-serif;background:#fff">
+                                <option value="">usar da linha</option>
+                                <sc-for list="{{ tr.opts.AmbienteLinha }}" as="o" hint-placeholder-count="4"><option value="{{ o.v }}">{{ o.l }}</option></sc-for>
+                              </select>
+                            </div>
+                            <div style="display:flex;flex-direction:column;gap:3px">
+                              <label style="font:600 10px 'IBM Plex Sans',sans-serif;color:#8892a3;text-transform:uppercase">Tipo (override)</label>
+                              <select value="{{ tr.tipo }}" onChange="{{ tr.onTipo }}" style="width:100%;box-sizing:border-box;padding:7px 8px;border:1px solid #d7dce3;border-radius:6px;font:500 12px 'IBM Plex Sans',sans-serif;background:#fff">
+                                <option value="">usar da linha</option>
+                                <sc-for list="{{ tr.opts.TipoLinha }}" as="o" hint-placeholder-count="2"><option value="{{ o.v }}">{{ o.l }}</option></sc-for>
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </div>
+                  </sc-if>
+                </div>
+                </sc-for>
+              </div>
+              </sc-if>
+
+            </div>
+            </sc-if>
+          </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isResultados }}">
+        <div style="max-width:900px;display:flex;flex-direction:column;gap:18px">
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            <sc-for list="{{ resTab.lista }}" as="it" hint-placeholder-count="3">
+              <div onClick="{{ it.onSelect }}" style="{{ it.style }}">
+                <div style="display:flex;align-items:center;gap:8px;min-width:0">
+                  <span style="{{ it.dotStyle }}"></span>
+                  <span style="{{ it.textStyle }}">{{ it.nome }}</span>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+
+          <sc-if value="{{ resTab.selecionada }}">
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div style="background:#fff;border:1px solid #e2e6ed;border-radius:12px;padding:20px 22px">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:4px">
+                <div style="font:700 15px 'IBM Plex Sans',sans-serif;color:#101828">{{ resTab.selecionada.nome }}</div>
+              </div>
+              <div style="font:500 12.5px 'IBM Plex Mono',monospace;color:#8892a3">N_D {{ resTab.selecionada.N_D }} /ano · N_M {{ resTab.selecionada.N_M }} /ano · N_DJ {{ resTab.selecionada.N_DJ }} /ano</div>
+            </div>
+
+            <div style="display:flex;flex-wrap:wrap;gap:14px">
+              <sc-for list="{{ resTab.selecionada.riscos }}" as="r" hint-placeholder-count="3">
+                <div style="flex:1 1 170px;min-width:0;box-sizing:border-box;background:#fff;border:1px solid #e2e6ed;border-radius:12px;padding:16px 18px">
+                  <div style="font:600 12px 'IBM Plex Sans',sans-serif;color:#3a4453;margin-bottom:10px">{{ r.titulo }}</div>
+                  <div style="font:700 20px 'IBM Plex Mono',monospace;color:#101828">{{ r.valor }}</div>
+                  <div style="font:500 11.5px 'IBM Plex Mono',monospace;color:#8892a3;margin-top:2px">limite {{ r.limite }}</div>
+                  <div style="height:6px;background:#eef1f5;border-radius:4px;margin-top:10px;overflow:hidden">
+                    <div style="{{ r.barStyle }}"></div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+
+            <div style="background:#fff;border:1px solid #e2e6ed;border-radius:12px;padding:16px 18px">
+              <div style="font:600 12px 'IBM Plex Sans',sans-serif;color:#3a4453;margin-bottom:10px">F — Frequência de danos (eventos/ano)</div>
+              <div style="display:flex;align-items:baseline;gap:14px">
+                <div style="font:700 20px 'IBM Plex Mono',monospace;color:#101828">{{ resTab.selecionada.freq.valor }}</div>
+                <div style="font:500 12px 'IBM Plex Mono',monospace;color:#8892a3">limite F_T {{ resTab.selecionada.freq.limite }}</div>
+              </div>
+              <div style="height:6px;background:#eef1f5;border-radius:4px;margin-top:10px;overflow:hidden">
+                <div style="{{ resTab.selecionada.freq.barStyle }}"></div>
+              </div>
+            </div>
+
+            <div style="background:#fff;border:1px solid #e2e6ed;border-radius:12px;padding:18px 20px">
+              <div style="font:700 13px 'IBM Plex Sans',sans-serif;color:#101828;margin-bottom:4px">Componentes dominantes de R1</div>
+              <div style="font:400 12px 'IBM Plex Sans',sans-serif;color:#8892a3;margin-bottom:14px">Parcelas ordenadas pela maior contribuição ao risco</div>
+              <div style="display:flex;flex-direction:column;gap:10px">
+                <sc-for list="{{ resTab.selecionada.dominantes }}" as="d" hint-placeholder-count="4">
+                  <div style="display:flex;flex-direction:column;gap:5px">
+                    <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px">
+                      <div style="min-width:0;font:500 12px 'IBM Plex Sans',sans-serif;color:#374151">{{ d.label }}</div>
+                      <div style="flex:0 0 auto;font:600 12px 'IBM Plex Mono',monospace;color:#101828;text-align:right">{{ d.valor }}</div>
+                    </div>
+                    <div style="min-width:0;height:8px;background:#eef1f5;border-radius:4px;overflow:hidden">
+                      <div style="height:100%;background:#2354a6;border-radius:4px;width:{{ d.pct }}%"></div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="background:#fff;border:1px solid #e2e6ed;border-radius:12px;padding:18px 20px;overflow-x:auto">
+              <div style="font:700 13px 'IBM Plex Sans',sans-serif;color:#101828;margin-bottom:12px">Contribuição por zona</div>
+              <table style="border-collapse:collapse;width:100%;font:500 12px 'IBM Plex Mono',monospace;white-space:nowrap">
+                <thead>
+                  <tr style="text-align:left;border-bottom:1px solid #e2e6ed">
+                    <th style="padding:6px 10px;font:600 11px 'IBM Plex Sans',sans-serif;color:#8892a3;text-transform:uppercase">Zona</th>
+                    <th style="padding:6px 10px;font:600 11px 'IBM Plex Sans',sans-serif;color:#8892a3;text-transform:uppercase">R_A</th>
+                    <th style="padding:6px 10px;font:600 11px 'IBM Plex Sans',sans-serif;color:#8892a3;text-transform:uppercase">R_B</th>
+                    <th style="padding:6px 10px;font:600 11px 'IBM Plex Sans',sans-serif;color:#8892a3;text-transform:uppercase">R_C</th>
+                    <th style="padding:6px 10px;font:600 11px 'IBM Plex Sans',sans-serif;color:#8892a3;text-transform:uppercase">R_M</th>
+                    <th style="padding:6px 10px;font:600 11px 'IBM Plex Sans',sans-serif;color:#8892a3;text-transform:uppercase">R_U</th>
+                    <th style="padding:6px 10px;font:600 11px 'IBM Plex Sans',sans-serif;color:#8892a3;text-transform:uppercase">R_V</th>
+                    <th style="padding:6px 10px;font:600 11px 'IBM Plex Sans',sans-serif;color:#8892a3;text-transform:uppercase">R_W</th>
+                    <th style="padding:6px 10px;font:600 11px 'IBM Plex Sans',sans-serif;color:#8892a3;text-transform:uppercase">R_Z</th>
+                    <th style="padding:6px 10px;font:600 11px 'IBM Plex Sans',sans-serif;color:#8892a3;text-transform:uppercase">F_zona</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <sc-for list="{{ resTab.selecionada.zonas }}" as="z" hint-placeholder-count="2">
+                    <tr style="border-bottom:1px solid #f0f2f5">
+                      <td style="padding:8px 10px;font:600 12px 'IBM Plex Sans',sans-serif;color:#1e2937">{{ z.nome }}</td>
+                      <td style="padding:8px 10px;color:#3a4453">{{ z.R_A }}</td>
+                      <td style="padding:8px 10px;color:#3a4453">{{ z.R_B }}</td>
+                      <td style="padding:8px 10px;color:#3a4453">{{ z.R_C }}</td>
+                      <td style="padding:8px 10px;color:#3a4453">{{ z.R_M }}</td>
+                      <td style="padding:8px 10px;color:#3a4453">{{ z.R_U }}</td>
+                      <td style="padding:8px 10px;color:#3a4453">{{ z.R_V }}</td>
+                      <td style="padding:8px 10px;color:#3a4453">{{ z.R_W }}</td>
+                      <td style="padding:8px 10px;color:#3a4453">{{ z.R_Z }}</td>
+                      <td style="padding:8px 10px;color:#3a4453">{{ z.F_zona }}</td>
+                    </tr>
+                  </sc-for>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isMemorial }}">
+        <div style="max-width:980px;display:flex;flex-direction:column;gap:18px">
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            <sc-for list="{{ memTab.lista }}" as="it" hint-placeholder-count="3">
+              <div onClick="{{ it.onSelect }}" style="{{ it.style }}">{{ it.nome }}</div>
+            </sc-for>
+          </div>
+
+          <sc-if value="{{ memTab.selecionada }}">
+          <div style="display:flex;flex-direction:column;gap:16px">
+
+            <div style="background:#fff;border:1px solid #e2e6ed;border-radius:12px;padding:18px 20px">
+              <div style="font:700 15px 'IBM Plex Sans',sans-serif;color:#101828;margin-bottom:2px">{{ memTab.selecionada.nome }}</div>
+              <div style="font:500 12px 'IBM Plex Mono',monospace;color:#8892a3">F_T = {{ memTab.selecionada.ft }} eventos/ano</div>
+            </div>
+
+            <div style="background:#fff;border:1px solid #e2e6ed;border-radius:12px;padding:18px 20px">
+              <div style="font:700 13px 'IBM Plex Sans',sans-serif;color:#101828;margin-bottom:2px">Anexo A — número de eventos perigosos</div>
+              <div style="font:400 12px 'IBM Plex Sans',sans-serif;color:#8892a3;margin-bottom:12px">Escala da estrutura, densidade de descargas e áreas de exposição equivalente</div>
+              <table style="border-collapse:collapse;width:100%;font:500 12.5px 'IBM Plex Mono',monospace">
+                <tbody>
+                  <sc-for list="{{ memTab.selecionada.eventos }}" as="op" hint-placeholder-count="5">
+                    <tr style="border-bottom:1px solid #f0f2f5">
+                      <td style="padding:8px 10px;width:70px;font:700 12.5px 'IBM Plex Mono',monospace;color:#2354a6">{{ op.simbolo }}</td>
+                      <td style="padding:8px 10px;width:64px;font:500 11px 'IBM Plex Sans',sans-serif;color:#a0aab8">{{ op.eq }}</td>
+                      <td style="padding:8px 10px;color:#5b6675">{{ op.operandos }}</td>
+                      <td style="padding:8px 10px;color:#5b6675;font-style:italic">{{ op.origem }}</td>
+                      <td style="padding:8px 10px;width:110px;text-align:right;font:700 12.5px 'IBM Plex Mono',monospace;color:#101828">{{ op.valor }}</td>
+                    </tr>
+                  </sc-for>
+                </tbody>
+              </table>
+            </div>
+
+            <sc-for list="{{ memTab.selecionada.zonas }}" as="mz" hint-placeholder-count="1">
+              <div style="background:#fff;border:1px solid #e2e6ed;border-radius:12px;padding:18px 20px;display:flex;flex-direction:column;gap:14px">
+                <div style="font:700 13.5px 'IBM Plex Sans',sans-serif;color:#101828;padding-bottom:8px;border-bottom:2px solid #eef1f5">Zona — {{ mz.nome }}</div>
+
+                <div>
+                  <div style="font:600 11.5px 'IBM Plex Sans',sans-serif;color:#64748b;margin-bottom:6px">Coeficientes e fatores de redução (Anexo B/C)</div>
+                  <table style="border-collapse:collapse;width:100%;font:500 12.5px 'IBM Plex Mono',monospace">
+                    <tbody>
+                      <sc-for list="{{ mz.coefRows }}" as="op" hint-placeholder-count="6">
+                        <tr style="border-bottom:1px solid #f0f2f5">
+                          <td style="padding:6px 10px;width:70px;font:700 12.5px 'IBM Plex Mono',monospace;color:#2354a6">{{ op.simbolo }}</td>
+                          <td style="padding:6px 10px;width:64px;font:500 11px 'IBM Plex Sans',sans-serif;color:#a0aab8">{{ op.eq }}</td>
+                          <td style="padding:6px 10px;color:#5b6675;font-style:italic">{{ op.origem }}</td>
+                          <td style="padding:6px 10px;width:90px;text-align:right;font:700 12.5px 'IBM Plex Mono',monospace;color:#101828">{{ op.valor }}</td>
+                        </tr>
+                      </sc-for>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div>
+                  <div style="font:600 11.5px 'IBM Plex Sans',sans-serif;color:#64748b;margin-bottom:6px">Probabilidades combinadas (P_A, P_C, P_M)</div>
+                  <table style="border-collapse:collapse;width:100%;font:500 12.5px 'IBM Plex Mono',monospace">
+                    <tbody>
+                      <sc-for list="{{ mz.probs }}" as="op" hint-placeholder-count="3">
+                        <tr style="border-bottom:1px solid #f0f2f5">
+                          <td style="padding:6px 10px;width:70px;font:700 12.5px 'IBM Plex Mono',monospace;color:#2354a6">{{ op.simbolo }}</td>
+                          <td style="padding:6px 10px;width:64px;font:500 11px 'IBM Plex Sans',sans-serif;color:#a0aab8">{{ op.eq }}</td>
+                          <td style="padding:6px 10px;color:#5b6675;font-style:italic">{{ op.origem }}</td>
+                          <td style="padding:6px 10px;width:90px;text-align:right;font:700 12.5px 'IBM Plex Mono',monospace;color:#101828">{{ op.valor }}</td>
+                        </tr>
+                      </sc-for>
+                    </tbody>
+                  </table>
+                </div>
+
+                <sc-if value="{{ mz.sistemas.length }}">
+                <div>
+                  <div style="font:600 11.5px 'IBM Plex Sans',sans-serif;color:#64748b;margin-bottom:6px">Sistemas internos</div>
+                  <sc-for list="{{ mz.sistemas }}" as="ms" hint-placeholder-count="1">
+                    <div style="background:#f8f9fb;border-radius:8px;padding:10px 12px;margin-bottom:8px">
+                      <div style="font:600 12px 'IBM Plex Sans',sans-serif;color:#374151;margin-bottom:4px">{{ ms.nome }} <span style="font:500 11px 'IBM Plex Mono',monospace;color:#8892a3">— U_W {{ ms.U_W }} · {{ ms.dps }}</span></div>
+                      <table style="border-collapse:collapse;width:100%;font:500 12px 'IBM Plex Mono',monospace">
+                        <tbody>
+                          <sc-for list="{{ ms.rows }}" as="op" hint-placeholder-count="7">
+                            <tr style="border-bottom:1px solid #eceff3">
+                              <td style="padding:5px 8px;width:60px;font:700 12px 'IBM Plex Mono',monospace;color:#2354a6">{{ op.simbolo }}</td>
+                              <td style="padding:5px 8px;color:#5b6675;font-style:italic">{{ op.origem }}</td>
+                              <td style="padding:5px 8px;width:80px;text-align:right;font:700 12px 'IBM Plex Mono',monospace;color:#101828">{{ op.valor }}</td>
+                            </tr>
+                          </sc-for>
+                        </tbody>
+                      </table>
+                    </div>
+                  </sc-for>
+                </div>
+                </sc-if>
+
+                <sc-if value="{{ mz.linhas.length }}">
+                <div>
+                  <div style="font:600 11.5px 'IBM Plex Sans',sans-serif;color:#64748b;margin-bottom:6px">Linhas conectadas</div>
+                  <sc-for list="{{ mz.linhas }}" as="ml" hint-placeholder-count="1">
+                    <div style="background:#f8f9fb;border-radius:8px;padding:10px 12px;margin-bottom:8px">
+                      <div style="font:600 12px 'IBM Plex Sans',sans-serif;color:#374151;margin-bottom:4px">{{ ml.nome }} <span style="font:500 11px 'IBM Plex Mono',monospace;color:#8892a3">— U_W mín {{ ml.uw_min }}</span></div>
+                      <sc-for list="{{ ml.trechos }}" as="t" hint-placeholder-count="1">
+                        <div style="font:600 11px 'IBM Plex Sans',sans-serif;color:#8892a3;margin:6px 0 3px">{{ t.nome }}</div>
+                        <table style="border-collapse:collapse;width:100%;font:500 12px 'IBM Plex Mono',monospace;margin-bottom:6px">
+                          <tbody>
+                            <sc-for list="{{ t.rows }}" as="op" hint-placeholder-count="7">
+                              <tr style="border-bottom:1px solid #eceff3">
+                                <td style="padding:5px 8px;width:60px;font:700 12px 'IBM Plex Mono',monospace;color:#2354a6">{{ op.simbolo }}</td>
+                                <td style="padding:5px 8px;color:#5b6675;font-style:italic">{{ op.origem }}</td>
+                                <td style="padding:5px 8px;width:80px;text-align:right;font:700 12px 'IBM Plex Mono',monospace;color:#101828">{{ op.valor }}</td>
+                              </tr>
+                            </sc-for>
+                          </tbody>
+                        </table>
+                      </sc-for>
+                      <table style="border-collapse:collapse;width:100%;font:500 12px 'IBM Plex Mono',monospace">
+                        <tbody>
+                          <sc-for list="{{ ml.rows }}" as="op" hint-placeholder-count="10">
+                            <tr style="border-bottom:1px solid #eceff3">
+                              <td style="padding:5px 8px;width:60px;font:700 12px 'IBM Plex Mono',monospace;color:#2354a6">{{ op.simbolo }}</td>
+                              <td style="padding:5px 8px;color:#5b6675;font-style:italic">{{ op.origem }}</td>
+                              <td style="padding:5px 8px;width:80px;text-align:right;font:700 12px 'IBM Plex Mono',monospace;color:#101828">{{ op.valor }}</td>
+                            </tr>
+                          </sc-for>
+                        </tbody>
+                      </table>
+                    </div>
+                  </sc-for>
+                </div>
+                </sc-if>
+
+                <div>
+                  <div style="font:600 11.5px 'IBM Plex Sans',sans-serif;color:#64748b;margin-bottom:6px">Perdas (Anexo C/D) e componentes de risco</div>
+                  <table style="border-collapse:collapse;width:100%;font:500 12.5px 'IBM Plex Mono',monospace">
+                    <tbody>
+                      <sc-for list="{{ mz.perdasRows }}" as="op" hint-placeholder-count="3">
+                        <tr style="border-bottom:1px solid #f0f2f5">
+                          <td style="padding:6px 10px;width:70px;font:700 12.5px 'IBM Plex Mono',monospace;color:#2354a6">{{ op.simbolo }}</td>
+                          <td style="padding:6px 10px;width:64px;font:500 11px 'IBM Plex Sans',sans-serif;color:#a0aab8">{{ op.eq }}</td>
+                          <td style="padding:6px 10px;color:#5b6675;font-style:italic">{{ op.operandos }}</td>
+                          <td style="padding:6px 10px;width:90px;text-align:right;font:700 12.5px 'IBM Plex Mono',monospace;color:#101828">{{ op.valor }}</td>
+                        </tr>
+                      </sc-for>
+                      <sc-for list="{{ mz.riscosRows }}" as="op" hint-placeholder-count="9">
+                        <tr style="border-bottom:1px solid #f0f2f5;background:#f8fafc">
+                          <td style="padding:6px 10px;width:70px;font:700 12.5px 'IBM Plex Mono',monospace;color:#173d73">{{ op.simbolo }}</td>
+                          <td style="padding:6px 10px;width:64px;font:500 11px 'IBM Plex Sans',sans-serif;color:#a0aab8">{{ op.eq }}</td>
+                          <td style="padding:6px 10px;color:#5b6675;font-style:italic">{{ op.origem }}</td>
+                          <td style="padding:6px 10px;width:90px;text-align:right;font:700 12.5px 'IBM Plex Mono',monospace;color:#101828">{{ op.valor }}</td>
+                        </tr>
+                      </sc-for>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </sc-for>
+
+            <div style="background:#173d73;border-radius:12px;padding:18px 20px">
+              <div style="font:700 13px 'IBM Plex Sans',sans-serif;color:#fff;margin-bottom:10px">Totais da estrutura</div>
+              <table style="border-collapse:collapse;width:100%;font:500 12.5px 'IBM Plex Mono',monospace">
+                <tbody>
+                  <sc-for list="{{ memTab.selecionada.totais }}" as="op" hint-placeholder-count="4">
+                    <tr style="border-bottom:1px solid rgba(255,255,255,0.12)">
+                      <td style="padding:7px 10px;width:70px;font:700 13px 'IBM Plex Mono',monospace;color:#7fb1ff">{{ op.simbolo }}</td>
+                      <td style="padding:7px 10px;color:#c7d5ea;font-style:italic">{{ op.origem }}</td>
+                      <td style="padding:7px 10px;width:110px;text-align:right;font:700 14px 'IBM Plex Mono',monospace;color:#fff">{{ op.valor }}</td>
+                    </tr>
+                  </sc-for>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isSolucao }}">
+        <div style="max-width:900px;display:flex;flex-direction:column;gap:18px">
+
+          <sc-if value="{{ solTab.erro }}">
+            <div style="background:#fdecea;border:1px solid #f3c9c4;border-radius:10px;padding:16px 18px;font:500 13px 'IBM Plex Sans',sans-serif;color:#c0392b">Não foi possível calcular o estudo de solução: {{ solTab.erro }}</div>
+          </sc-if>
+
+          <div>
+            <div style="font:700 14px 'IBM Plex Sans',sans-serif;color:#101828;margin-bottom:4px">Estudo de solução (Seção 11) — pacotes combinados de medidas</div>
+            <div style="font:400 12.5px 'IBM Plex Sans',sans-serif;color:#8892a3">O otimizador testa combinações simultâneas de SPDA, DPS, proteção toque/passo e providências contra incêndio e mostra os pacotes que, aplicados em conjunto, atendem R1 e F. Nada é gravado até você confirmar: para instalação existente, use "Salvar proposta" para registrar o cenário avaliado sem tocar nos dados atuais (as-built); use "Aplicar ao projeto" só quando quiser que a combinação passe a ser a própria situação da estrutura (projeto novo ou medida já implementada em campo).</div>
+          </div>
+
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            <sc-for list="{{ solTab.lista }}" as="it" hint-placeholder-count="2">
+              <div style="{{ it.style }}" onClick="{{ it.onSelect }}">
+                <span style="{{ it.dotStyle }}"></span>
+                <span style="{{ it.textStyle }}">{{ it.nome }}</span>
+              </div>
+            </sc-for>
+          </div>
+
+          <sc-if value="{{ solTab.detalhe }}">
+          <div style="background:#fff;border:1px solid #e2e6ed;border-radius:12px;padding:18px 20px;display:flex;flex-direction:column;gap:16px">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+              <div style="font:700 14px 'IBM Plex Sans',sans-serif;color:#101828">{{ solTab.detalhe.nome }}</div>
+              <div style="display:flex;gap:16px;font:600 12px 'IBM Plex Mono',monospace;color:#5b6675">
+                <span>R1 atual: {{ solTab.detalhe.R1 }} <span style="color:#8892a3">(limite {{ solTab.detalhe.rt_R1 }})</span></span>
+                <span>F atual: {{ solTab.detalhe.F }} <span style="color:#8892a3">(limite {{ solTab.detalhe.ft }})</span></span>
+              </div>
+            </div>
+
+            <sc-if value="{{ solTab.detalhe.jaConforme }}">
+              <div style="font:500 12.5px 'IBM Plex Sans',sans-serif;color:#1a7f5a;background:#e6f6ee;border-radius:8px;padding:10px 12px">Estrutura já dentro do risco tolerável — nenhuma medida adicional é necessária. O simulador abaixo permite explorar margem extra.</div>
+            </sc-if>
+
+            <sc-if value="{{ solTab.detalhe.semSolucao }}">
+              <div style="font:500 12.5px 'IBM Plex Sans',sans-serif;color:#b8860b;background:#fdf6e3;border-radius:8px;padding:10px 12px">Nenhuma combinação do catálogo atual (SPDA, DPS, toque/passo, incêndio) atende R1 e F simultaneamente — requer revisão de projeto (geometria, ocupação ou medidas fora das escadas modeladas).</div>
+            </sc-if>
+
+            <sc-if value="{{ solTab.detalhe.temPacotes }}">
+            <div>
+              <div style="font:600 11px 'IBM Plex Sans',sans-serif;color:#64748b;text-transform:uppercase;letter-spacing:.03em;margin-bottom:8px">Pacotes sugeridos — menor nº de medidas alteradas primeiro</div>
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <sc-for list="{{ solTab.detalhe.pacotes }}" as="p" hint-placeholder-count="3">
+                  <div style="{{ p.cardStyle }}" onClick="{{ p.onUsar }}">
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+                      <div style="font:600 12.5px 'IBM Plex Sans',sans-serif;color:#1e2937">Pacote {{ p.indice }}{{ p.marcaSelecionado }}</div>
+                      <div style="font:700 11.5px 'IBM Plex Mono',monospace;display:flex;gap:10px;color:#173d73">
+                        <span>R1 {{ p.R1 }}</span><span>F {{ p.F }}</span>
+                      </div>
+                    </div>
+                    <div style="font:500 12px 'IBM Plex Sans',sans-serif;color:#5b6675;margin-top:4px">{{ p.resumo }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+            </sc-if>
+
+            <sc-if value="{{ solTab.detalhe.temMedidas }}">
+            <div>
+              <div style="font:600 11px 'IBM Plex Sans',sans-serif;color:#64748b;text-transform:uppercase;letter-spacing:.03em;margin-bottom:8px">Simulador — ajuste manual da combinação</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                <sc-for list="{{ solTab.detalhe.medidas }}" as="m" hint-placeholder-count="4">
+                  <label style="display:flex;flex-direction:column;gap:5px;font:600 12px 'IBM Plex Sans',sans-serif;color:#374151">
+                    {{ m.descricao }}
+                    <select value="{{ m.valorForm }}" onChange="{{ m.onChange }}" style="padding:8px 10px;border-radius:7px;border:1px solid #d7dee8;font:500 12.5px 'IBM Plex Sans',sans-serif;color:#1e2937;background:#fff">
+                      <sc-for list="{{ m.opcoes }}" as="o" hint-placeholder-count="4">
+                        <option value="{{ o.valorForm }}">{{ o.rotulo }}</option>
+                      </sc-for>
+                    </select>
+                  </label>
+                </sc-for>
+              </div>
+            </div>
+            </sc-if>
+
+            <div style="background:#f8fafc;border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:12px">
+              <div style="display:flex;gap:18px;font:700 12.5px 'IBM Plex Mono',monospace;flex-wrap:wrap">
+                <span style="color:{{ solTab.detalhe.simulado.corR1 }}">R1 {{ solTab.detalhe.simulado.R1 }}</span>
+                <span style="color:{{ solTab.detalhe.simulado.corF }}">F {{ solTab.detalhe.simulado.F }}</span>
+                <span style="color:#8892a3">R3 {{ solTab.detalhe.simulado.R3 }}</span>
+                <span style="color:#8892a3">R4 {{ solTab.detalhe.simulado.R4 }}</span>
+              </div>
+              <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
+                <button onClick="{{ solTab.detalhe.onSalvarProposta }}" style="padding:10px 16px;border-radius:8px;border:1px solid #2354a6;background:#fff;color:#2354a6;font:700 12.5px 'IBM Plex Sans',sans-serif;cursor:pointer">Salvar proposta (mantém dados atuais)</button>
+                <button onClick="{{ solTab.detalhe.onAplicar }}" style="padding:10px 16px;border-radius:8px;border:none;background:#173d73;color:#fff;font:700 12.5px 'IBM Plex Sans',sans-serif;cursor:pointer">Aplicar ao projeto (sobrescreve dados atuais)</button>
+                <sc-if value="{{ solTab.detalhe.temProposta }}">
+                  <span style="font:600 11.5px 'IBM Plex Mono',monospace;padding:4px 10px;border-radius:20px;background:#eaf1fc;color:#2354a6">proposta salva</span>
+                  <button onClick="{{ solTab.detalhe.onLimparProposta }}" style="padding:8px 12px;border-radius:8px;border:1px solid #dde3ea;background:#fff;color:#8892a3;font:600 12px 'IBM Plex Sans',sans-serif;cursor:pointer">Remover proposta</button>
+                </sc-if>
+              </div>
+            </div>
+          </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+    </div>
+  </div>
+</div>
+</sc-if>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    ready: false,
+    projeto: null,
+    tab: "projeto",
+    ui: { expEst: null, estTab: "geral", expZona: null, expLinha: null, resEst: 0, memEst: 0, solEst: 0, solCombo: {} },
+  };
+
+  componentDidMount() {
+    Promise.all([import("./spda-model.js"), import("./spda-calc.js")])
+      .then(([model, calc]) => {
+        this._model = model;
+        this._calc = calc;
+        this._opts = {};
+        for (const k in model.ENUM_OPTIONS) {
+          this._opts[k] = model.ENUM_OPTIONS[k].map(([v, l]) => ({ v, l }));
+        }
+        this.setState({ ready: true, projeto: model.exemploProjeto() });
+      });
+  }
+
+  // ---------------- formatting ----------------
+  fmt(v, digits) {
+    digits = digits || 3;
+    if (v === null || v === undefined || Number.isNaN(v)) return "—";
+    if (v === 0) return "0";
+    const SUP = { "-": "⁻", "0": "⁰", "1": "¹", "2": "²", "3": "³", "4": "⁴", "5": "⁵", "6": "⁶", "7": "⁷", "8": "⁸", "9": "⁹" };
+    const sup = (n) => String(n).split("").map((c) => SUP[c] || c).join("");
+    const a = Math.abs(v);
+    if (a < 1e-3 || a >= 1e6) {
+      const parts = v.toExponential(digits - 1).split("e");
+      const exp = parseInt(parts[1], 10);
+      return `${parts[0].replace(".", ",")} × 10${sup(exp)}`;
+    }
+    return v.toLocaleString("pt-BR", { maximumFractionDigits: a < 1 ? 4 : 2 });
+  }
+
+  num(s, fallback) {
+    const n = parseFloat(s);
+    return Number.isNaN(n) ? (fallback === undefined ? 0 : fallback) : n;
+  }
+  numOrNull(s) {
+    if (s === "" || s === null || s === undefined) return null;
+    const n = parseFloat(s);
+    return Number.isNaN(n) ? null : n;
+  }
+
+  // ---------------- generic state ----------------
+  setTab(tab) { this.setState({ tab }); }
+  setUI(patch) { this.setState((s) => ({ ui: { ...s.ui, ...patch } })); }
+
+  // ---------------- estudo de solução (combinação de medidas) ----------------
+  setSolCombo(i, combo) { this.setState((s) => ({ ui: { ...s.ui, solCombo: { ...(s.ui.solCombo || {}), [i]: combo } } })); }
+  // Grava a combinação como proposta avaliada SEM tocar nos campos reais da
+  // estrutura — para instalação existente, mantém o registro do que já está
+  // instalado e apenas documenta o impacto estimado da melhoria.
+  salvarProposta(i, combo) { this.updateEstrutura(i, { proposta: { combo } }); }
+  limparProposta(i) { this.updateEstrutura(i, { proposta: null }); }
+  aplicarComboAoProjeto(i, combo) {
+    const novoProjeto = this._calc.aplicarCombinacaoAoProjeto(this.state.projeto, i, combo);
+    this.setState((s) => ({ projeto: novoProjeto, ui: { ...s.ui, solCombo: { ...s.ui.solCombo, [i]: undefined } } }));
+  }
+  // Cacheia o resultado da busca combinatória por (referência do projeto,
+  // estrutura selecionada) — evita recalcular ~centenas de combinações a
+  // cada tecla digitada no simulador; só refaz quando o projeto muda de fato.
+  pacotesCacheados(projeto, est, i) {
+    if (this._pacCache && this._pacCache.projeto === projeto && this._pacCache.i === i) return this._pacCache.pac;
+    const pac = this._calc.pacotesParaEstrutura(projeto, est, 3);
+    this._pacCache = { projeto, i, pac };
+    return pac;
+  }
+
+  cloneProjeto() { return structuredClone(this.state.projeto); }
+  commit(p) { this.setState({ projeto: p }); }
+
+  updateProjeto(patch) { this.setState((s) => ({ projeto: { ...s.projeto, ...patch } })); }
+  updateIdentificacao(patch) {
+    this.setState((s) => ({ projeto: { ...s.projeto, identificacao: { ...s.projeto.identificacao, ...patch } } }));
+  }
+  toggleRtOverride(on) {
+    this.updateProjeto({ rt_override: on ? { ...this._calc.REF.RT } : null });
+  }
+  toggleFtOverride(on) {
+    this.updateProjeto({ ft_override: on ? 1.0 : null });
+  }
+
+  loadExample() {
+    this.setState({
+      projeto: this._model.exemploProjeto(), tab: "projeto",
+      ui: { expEst: null, estTab: "geral", expZona: null, expLinha: null, resEst: 0, memEst: 0, solEst: 0, solCombo: {} },
+    });
+  }
+  newProject() {
+    this.setState({
+      projeto: this._model.defaultProjeto(), tab: "projeto",
+      ui: { expEst: null, estTab: "geral", expZona: null, expLinha: null, resEst: 0, memEst: 0, solEst: 0, solCombo: {} },
+    });
+  }
+
+  // ---------------- exportar / salvar / carregar ----------------
+  stripIds(value) {
+    if (Array.isArray(value)) return value.map((v) => this.stripIds(v));
+    if (value && typeof value === "object") {
+      const out = {};
+      for (const k in value) { if (k === "_id") continue; out[k] = this.stripIds(value[k]); }
+      return out;
+    }
+    return value;
+  }
+  slugify(nome) {
+    return (nome || "projeto").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "projeto";
+  }
+  downloadBlob(content, mime, filename) {
+    const blob = new Blob([content], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+  }
+
+  salvarProjetoJson() {
+    const limpo = this.stripIds(this.state.projeto);
+    this.downloadBlob(JSON.stringify(limpo, null, 2), "application/json", `${this.slugify(this.state.projeto.nome)}.json`);
+  }
+
+  carregarProjetoJson() {
+    const input = document.createElement("input");
+    input.type = "file"; input.accept = ".json,application/json";
+    input.onchange = (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const raw = JSON.parse(String(reader.result));
+          const normalizado = this._model.normalizarProjetoCarregado(raw);
+          this.setState({
+            projeto: normalizado, tab: "projeto",
+            ui: { expEst: null, estTab: "geral", expZona: null, expLinha: null, resEst: 0, memEst: 0, solEst: 0, solCombo: {} },
+          });
+        } catch (err) {
+          alert("Não foi possível carregar o projeto:\n" + ((err && err.message) || err));
+        }
+      };
+      reader.readAsText(file);
+    };
+    input.click();
+  }
+
+  async exportarRelatorio() {
+    try {
+      const projeto = this.state.projeto;
+      const memoria = this._calc.analisarMemoria(projeto);
+      let estudo = null;
+      try { estudo = this._calc.estudoSolucao(projeto); } catch (e) { estudo = null; }
+      let propostas = [];
+      try { propostas = this._calc.propostasRegistradas(projeto); } catch (e) { propostas = []; }
+      if (!this._relatorio) this._relatorio = await import("./spda-relatorio.js");
+      const html = this._relatorio.gerarRelatorioHtml(memoria, estudo, propostas);
+      const blob = new Blob([html], { type: "text/html" });
+      const url = URL.createObjectURL(blob);
+      const win = window.open(url, "_blank");
+      if (!win) this.downloadBlob(html, "text/html", `${this.slugify(projeto.nome)}-relatorio.html`);
+      setTimeout(() => URL.revokeObjectURL(url), 30000);
+    } catch (err) {
+      alert("Não foi possível gerar o relatório:\n" + ((err && err.message) || err));
+    }
+  }
+
+  // ---------------- estrutura CRUD ----------------
+  updateEstrutura(i, patch) { const p = this.cloneProjeto(); Object.assign(p.estruturas[i], patch); this.commit(p); }
+  toggleFormaComplexa(i, on) {
+    const p = this.cloneProjeto(); const e = p.estruturas[i];
+    if (on) { e.H_min = +(e.H * 0.7).toFixed(1); e.H_max = +(e.H * 1.3).toFixed(1); }
+    else { e.H_min = null; e.H_max = null; }
+    this.commit(p);
+  }
+  addEstrutura() {
+    const p = this.cloneProjeto(); p.estruturas.push(this._model.defaultEstrutura());
+    this.commit(p); this.setUI({ expEst: p.estruturas.length - 1, estTab: "geral", expZona: null, expLinha: null });
+  }
+  duplicateEstrutura(i) {
+    const p = this.cloneProjeto(); const copia = structuredClone(p.estruturas[i]); copia.nome += " (cópia)";
+    p.estruturas.splice(i + 1, 0, copia); this.commit(p);
+  }
+  removeEstrutura(i) {
+    const p = this.cloneProjeto(); p.estruturas.splice(i, 1); this.commit(p); this.setUI({ expEst: null });
+  }
+  toggleEst(i) {
+    this.setState((s) => ({ ui: { ...s.ui, expEst: s.ui.expEst === i ? null : i, estTab: "geral", expZona: null, expLinha: null } }));
+  }
+  setEstTab(t) { this.setUI({ estTab: t, expZona: null, expLinha: null }); }
+
+  // ---------------- zona CRUD ----------------
+  updateZona(i, j, patch) { const p = this.cloneProjeto(); Object.assign(p.estruturas[i].zonas[j], patch); this.commit(p); }
+  updateZonaMedidas(i, j, patch) { const p = this.cloneProjeto(); Object.assign(p.estruturas[i].zonas[j].medidas, patch); this.commit(p); }
+  addZona(i) {
+    const p = this.cloneProjeto(); p.estruturas[i].zonas.push(this._model.defaultZona());
+    this.commit(p); this.setUI({ expZona: p.estruturas[i].zonas.length - 1 });
+  }
+  removeZona(i, j) { const p = this.cloneProjeto(); p.estruturas[i].zonas.splice(j, 1); this.commit(p); this.setUI({ expZona: null }); }
+  toggleZona(j) { this.setState((s) => ({ ui: { ...s.ui, expZona: s.ui.expZona === j ? null : j } })); }
+
+  // ---------------- sistema interno CRUD ----------------
+  updateSistema(i, j, k, patch) { const p = this.cloneProjeto(); Object.assign(p.estruturas[i].zonas[j].sistemas_internos[k], patch); this.commit(p); }
+  addSistema(i, j) { const p = this.cloneProjeto(); p.estruturas[i].zonas[j].sistemas_internos.push(this._model.defaultSistemaInterno()); this.commit(p); }
+  removeSistema(i, j, k) { const p = this.cloneProjeto(); p.estruturas[i].zonas[j].sistemas_internos.splice(k, 1); this.commit(p); }
+
+  // ---------------- linha CRUD ----------------
+  updateLinha(i, j, patch) { const p = this.cloneProjeto(); Object.assign(p.estruturas[i].linhas[j], patch); this.commit(p); }
+  addLinha(i) {
+    const p = this.cloneProjeto(); p.estruturas[i].linhas.push(this._model.defaultLinha());
+    this.commit(p); this.setUI({ expLinha: p.estruturas[i].linhas.length - 1 });
+  }
+  removeLinha(i, j) { const p = this.cloneProjeto(); p.estruturas[i].linhas.splice(j, 1); this.commit(p); this.setUI({ expLinha: null }); }
+  toggleLinha(j) { this.setState((s) => ({ ui: { ...s.ui, expLinha: s.ui.expLinha === j ? null : j } })); }
+  toggleAdjacente(i, j, on) {
+    const p = this.cloneProjeto(); p.estruturas[i].linhas[j].adjacente = on ? this._model.defaultAdjacente() : null; this.commit(p);
+  }
+  updateAdjacente(i, j, patch) { const p = this.cloneProjeto(); Object.assign(p.estruturas[i].linhas[j].adjacente, patch); this.commit(p); }
+
+  // ---------------- trecho CRUD ----------------
+  updateTrecho(i, j, k, patch) { const p = this.cloneProjeto(); Object.assign(p.estruturas[i].linhas[j].trechos[k], patch); this.commit(p); }
+  addTrecho(i, j) { const p = this.cloneProjeto(); p.estruturas[i].linhas[j].trechos.push(this._model.defaultTrecho()); this.commit(p); }
+  removeTrecho(i, j, k) { const p = this.cloneProjeto(); p.estruturas[i].linhas[j].trechos.splice(k, 1); this.commit(p); }
+
+  // ---------------- view builders (Estruturas tab) ----------------
+  buildTrechoView(t, i, j, k, total) {
+    const self = this;
+    return {
+      i, j, k, canRemove: total > 1, nome: `Trecho ${k + 1}`,
+      L_L: t.L_L, rho: t.rho === null || t.rho === undefined ? "" : t.rho,
+      instalacao: t.instalacao || "", ambiente: t.ambiente || "", tipo: t.tipo || "",
+      opts: this._opts,
+      onLL: (e) => self.updateTrecho(i, j, k, { L_L: self.num(e.target.value, 1) }),
+      onRho: (e) => self.updateTrecho(i, j, k, { rho: self.numOrNull(e.target.value) }),
+      onInstalacao: (e) => self.updateTrecho(i, j, k, { instalacao: e.target.value === "" ? null : e.target.value }),
+      onAmbiente: (e) => self.updateTrecho(i, j, k, { ambiente: e.target.value === "" ? null : e.target.value }),
+      onTipo: (e) => self.updateTrecho(i, j, k, { tipo: e.target.value === "" ? null : e.target.value }),
+      onRemove: () => self.removeTrecho(i, j, k),
+    };
+  }
+
+  buildLinhaView(l, i, j) {
+    const self = this;
+    return {
+      i, j, nome: l.nome, tipo: l.tipo, categoria: l.categoria, instalacao: l.instalacao,
+      ambiente: l.ambiente, tipo_externa: l.tipo_externa, classe_blindagem: l.classe_blindagem,
+      nivel_eb: l.nivel_eb === null ? "" : l.nivel_eb, protecao_toque_entrada: l.protecao_toque_entrada,
+      temAdjacente: !!l.adjacente,
+      adjacente: l.adjacente ? {
+        L_J: l.adjacente.L_J, W_J: l.adjacente.W_J, H_J: l.adjacente.H_J, localizacao_J: l.adjacente.localizacao_J,
+      } : null,
+      opts: this._opts, expanded: false,
+      onToggle: () => self.toggleLinha(j),
+      onRemove: (e) => { e.stopPropagation(); self.removeLinha(i, j); },
+      onNome: (e) => self.updateLinha(i, j, { nome: e.target.value }),
+      onTipo: (e) => self.updateLinha(i, j, { tipo: e.target.value }),
+      onCategoria: (e) => self.updateLinha(i, j, { categoria: e.target.value }),
+      onInstalacao: (e) => self.updateLinha(i, j, { instalacao: e.target.value }),
+      onAmbiente: (e) => self.updateLinha(i, j, { ambiente: e.target.value }),
+      onTipoExterna: (e) => self.updateLinha(i, j, { tipo_externa: e.target.value }),
+      onClasseBlindagem: (e) => self.updateLinha(i, j, { classe_blindagem: e.target.value }),
+      onNivelEb: (e) => self.updateLinha(i, j, { nivel_eb: e.target.value === "" ? null : e.target.value }),
+      onProtecaoEntrada: (e) => self.updateLinha(i, j, { protecao_toque_entrada: e.target.value }),
+      onToggleAdjacente: (e) => self.toggleAdjacente(i, j, e.target.checked),
+      onAdjLJ: (e) => self.updateAdjacente(i, j, { L_J: self.num(e.target.value, 1) }),
+      onAdjWJ: (e) => self.updateAdjacente(i, j, { W_J: self.num(e.target.value, 1) }),
+      onAdjHJ: (e) => self.updateAdjacente(i, j, { H_J: self.num(e.target.value, 1) }),
+      onAdjLocalizacao: (e) => self.updateAdjacente(i, j, { localizacao_J: e.target.value }),
+      onAddTrecho: () => self.addTrecho(i, j),
+      trechos: l.trechos.map((t, k) => this.buildTrechoView(t, i, j, k, l.trechos.length)),
+    };
+  }
+
+  buildSistemaView(s, i, j, k) {
+    const self = this;
+    return {
+      i, j, k, nome: s.nome, U_W: s.U_W === null || s.U_W === undefined ? "" : s.U_W,
+      K_S1: s.K_S1, K_S2: s.K_S2, K_S3: s.K_S3,
+      K_S4: s.K_S4 === null || s.K_S4 === undefined ? "" : s.K_S4,
+      dps: s.dps === null ? "" : s.dps, em_zpr0a: s.em_zpr0a, opts: this._opts,
+      onNome: (e) => self.updateSistema(i, j, k, { nome: e.target.value }),
+      onUW: (e) => self.updateSistema(i, j, k, { U_W: self.numOrNull(e.target.value) }),
+      onKS1: (e) => self.updateSistema(i, j, k, { K_S1: self.num(e.target.value, 1) }),
+      onKS2: (e) => self.updateSistema(i, j, k, { K_S2: self.num(e.target.value, 1) }),
+      onKS3: (e) => self.updateSistema(i, j, k, { K_S3: self.num(e.target.value, 1) }),
+      onKS3Preset: (e) => { const v = e.target.value; if (v) self.updateSistema(i, j, k, { K_S3: self._model.ks3DeFiacao(v) }); },
+      onKS4: (e) => self.updateSistema(i, j, k, { K_S4: self.numOrNull(e.target.value) }),
+      onDps: (e) => self.updateSistema(i, j, k, { dps: e.target.value === "" ? null : e.target.value }),
+      onZpr0a: (e) => self.updateSistema(i, j, k, { em_zpr0a: e.target.checked }),
+      onRemove: () => self.removeSistema(i, j, k),
+    };
+  }
+
+  buildZonaView(z, i, j) {
+    const self = this;
+    return {
+      i, j, nome: z.nome, superficie: z.superficie, n_z: z.n_z, t_z: z.t_z, h_z: z.h_z,
+      relevancia_AD: z.relevancia_AD,
+      c_z: z.c_z === null || z.c_z === undefined ? "" : z.c_z,
+      c_a: z.c_a === null || z.c_a === undefined ? "" : z.c_a,
+      c_b: z.c_b === null || z.c_b === undefined ? "" : z.c_b,
+      c_c: z.c_c === null || z.c_c === undefined ? "" : z.c_c,
+      c_s: z.c_s === null || z.c_s === undefined ? "" : z.c_s,
+      protecao_toque_passo: z.medidas.protecao_toque_passo,
+      opts: this._opts, expanded: false,
+      onToggle: () => self.toggleZona(j),
+      onRemove: (e) => { e.stopPropagation(); self.removeZona(i, j); },
+      onNome: (e) => self.updateZona(i, j, { nome: e.target.value }),
+      onSuperficie: (e) => self.updateZona(i, j, { superficie: e.target.value }),
+      onNZ: (e) => self.updateZona(i, j, { n_z: self.num(e.target.value, 0) }),
+      onTZ: (e) => self.updateZona(i, j, { t_z: self.num(e.target.value, 0) }),
+      onHZ: (e) => self.updateZona(i, j, { h_z: self.num(e.target.value, 1) }),
+      onHZPreset: (e) => { const v = e.target.value; if (v) self.updateZona(i, j, { h_z: self._model.hzDePerigo(v) }); },
+      onRelevancia: (e) => self.updateZona(i, j, { relevancia_AD: e.target.value }),
+      onCZ: (e) => self.updateZona(i, j, { c_z: self.numOrNull(e.target.value) }),
+      onCA: (e) => self.updateZona(i, j, { c_a: self.numOrNull(e.target.value) }),
+      onCB: (e) => self.updateZona(i, j, { c_b: self.numOrNull(e.target.value) }),
+      onCC: (e) => self.updateZona(i, j, { c_c: self.numOrNull(e.target.value) }),
+      onCS: (e) => self.updateZona(i, j, { c_s: self.numOrNull(e.target.value) }),
+      onProtecaoToquePasso: (e) => self.updateZonaMedidas(i, j, { protecao_toque_passo: e.target.value }),
+      onAddSistema: () => self.addSistema(i, j),
+      sistemas: z.sistemas_internos.map((s, k) => this.buildSistemaView(s, i, j, k)),
+    };
+  }
+
+  buildEstView(est, i, resEst) {
+    const self = this;
+    return {
+      i, nome: est.nome, L: est.L, W: est.W, H: est.H,
+      formaComplexa: est.H_min !== null && est.H_min !== undefined,
+      H_min: est.H_min === null || est.H_min === undefined ? "" : est.H_min,
+      H_max: est.H_max === null || est.H_max === undefined ? "" : est.H_max,
+      localizacao: est.localizacao, tipo_construcao: est.tipo_construcao,
+      risco_incendio: est.risco_incendio, providencias_incendio: est.providencias_incendio,
+      ocupacao: est.ocupacao, zona_explosao: est.zona_explosao,
+      risco_explosao: est.risco_explosao, sistemas_criticos: est.sistemas_criticos,
+      nivel_spda: est.nivel_spda === null ? "" : est.nivel_spda,
+      c_t: est.c_t === null || est.c_t === undefined ? "" : est.c_t, n_t: est.n_t,
+      zonasCount: est.zonas.length, linhasCount: est.linhas.length,
+      expanded: false, estTab: "geral", opts: this._opts,
+      resumo: resEst ? {
+        ok: !(resEst.excede_R1 || resEst.excede_R3 || resEst.excede_R4 || resEst.excede_F),
+        R1: self.fmt(resEst.R1), F: self.fmt(resEst.F),
+      } : null,
+      onToggle: () => self.toggleEst(i),
+      onDuplicate: (e) => { e.stopPropagation(); self.duplicateEstrutura(i); },
+      onRemove: (e) => { e.stopPropagation(); self.removeEstrutura(i); },
+      onNome: (e) => self.updateEstrutura(i, { nome: e.target.value }),
+      onL: (e) => self.updateEstrutura(i, { L: self.num(e.target.value, 1) }),
+      onW: (e) => self.updateEstrutura(i, { W: self.num(e.target.value, 1) }),
+      onH: (e) => self.updateEstrutura(i, { H: self.num(e.target.value, 1) }),
+      onFormaComplexa: (e) => self.toggleFormaComplexa(i, e.target.checked),
+      onHMin: (e) => self.updateEstrutura(i, { H_min: self.num(e.target.value, 1) }),
+      onHMax: (e) => self.updateEstrutura(i, { H_max: self.num(e.target.value, 1) }),
+      onLocalizacao: (e) => self.updateEstrutura(i, { localizacao: e.target.value }),
+      onTipoConstrucao: (e) => self.updateEstrutura(i, { tipo_construcao: e.target.value }),
+      onRiscoIncendio: (e) => self.updateEstrutura(i, { risco_incendio: e.target.value }),
+      onProvidenciasIncendio: (e) => self.updateEstrutura(i, { providencias_incendio: e.target.value }),
+      onOcupacao: (e) => self.updateEstrutura(i, { ocupacao: e.target.value }),
+      onZonaExplosao: (e) => self.updateEstrutura(i, { zona_explosao: e.target.value }),
+      onRiscoExplosao: (e) => self.updateEstrutura(i, { risco_explosao: e.target.checked }),
+      onSistemasCriticos: (e) => self.updateEstrutura(i, { sistemas_criticos: e.target.checked }),
+      onNivelSpda: (e) => self.updateEstrutura(i, { nivel_spda: e.target.value === "" ? null : e.target.value }),
+      onCT: (e) => self.updateEstrutura(i, { c_t: self.numOrNull(e.target.value) }),
+      onNT: (e) => self.updateEstrutura(i, { n_t: self.num(e.target.value, 1) }),
+      onAddZona: () => self.addZona(i),
+      onAddLinha: () => self.addLinha(i),
+      onSetTabGeral: () => self.setEstTab("geral"),
+      onSetTabZonas: () => self.setEstTab("zonas"),
+      onSetTabLinhas: () => self.setEstTab("linhas"),
+      zonas: est.zonas.map((z, j) => this.buildZonaView(z, i, j)),
+      linhas: est.linhas.map((l, j) => this.buildLinhaView(l, i, j)),
+    };
+  }
+
+  // ---------------- view builders (Resultados tab) ----------------
+  buildResultadoDetalhe(re, rt) {
+    const barStyle = (pct, ok) => `height:100%;border-radius:4px;width:${pct}%;background:${ok ? "#1a7f5a" : "#c0392b"}`;
+    const linha = (chave, titulo, valor, limite, ok) => {
+      const pct = limite > 0 ? Math.min(100, (valor / limite) * 100) : 0;
+      return { chave, titulo, valor: this.fmt(valor), limite: this.fmt(limite), ok, pct, barStyle: barStyle(pct, ok) };
+    };
+    const riscosArr = [
+      linha("R1", "R1 — Perda de vida humana", re.R1, rt.R1, !re.excede_R1),
+      linha("R3", "R3 — Perda de patrimônio cultural", re.R3, rt.R3, !re.excede_R3),
+      linha("R4", "R4 — Perda de valor econômico", re.R4, rt.R4, !re.excede_R4),
+    ];
+    const freqPct = re.ft > 0 ? Math.min(100, (re.F / re.ft) * 100) : 0;
+    const freq = {
+      valor: this.fmt(re.F), limite: this.fmt(re.ft), ok: !re.excede_F,
+      pct: freqPct, barStyle: barStyle(freqPct, !re.excede_F),
+    };
+    const maxDom = re.dominantes.length ? re.dominantes[0][1] : 0;
+    const dominantes = re.dominantes.filter((kv) => kv[1] > 0).map((kv) => ({
+      chave: kv[0], label: this._model.COMPONENTE_LABELS[kv[0]] || kv[0], valor: this.fmt(kv[1]),
+      pct: maxDom > 0 ? (kv[1] / maxDom) * 100 : 0,
+    }));
+    const zonas = re.zonas.map((z) => ({
+      nome: z.nome, R_A: this.fmt(z.R_A), R_B: this.fmt(z.R_B), R_C: this.fmt(z.R_C), R_M: this.fmt(z.R_M),
+      R_U: this.fmt(z.R_U), R_V: this.fmt(z.R_V), R_W: this.fmt(z.R_W), R_Z: this.fmt(z.R_Z),
+      R_B3: this.fmt(z.R_B3), R_V3: this.fmt(z.R_V3), R4_total: this.fmt(z.R4_total), F_zona: this.fmt(z.F_zona),
+    }));
+    return {
+      nome: re.nome, N_D: this.fmt(re.N_D), N_M: this.fmt(re.N_M), N_DJ: this.fmt(re.N_DJ),
+      riscos: riscosArr, freq, dominantes, zonas,
+      geralOk: !(re.excede_R1 || re.excede_R3 || re.excede_R4 || re.excede_F),
+    };
+  }
+
+  // ---------------- view builders (Memorial tab) ----------------
+  opRow(o) {
+    if (!o) return null;
+    const entries = Object.entries(o.operandos || {});
+    const partes = entries.map((kv) => `${kv[0]}=${typeof kv[1] === "number" ? this.fmt(kv[1]) : kv[1]}`).join("   ·   ");
+    return { simbolo: o.simbolo, eq: o.eq, valor: this.fmt(o.resultado), origem: o.origem || "", operandos: partes };
+  }
+  buildMemorialDetalhe(me) {
+    const self = this;
+    const zonas = me.zonas.map((mz) => {
+      const coefRows = Object.values(mz.coefs).map((o) => self.opRow(o));
+      const sistemas = mz.sistemas.map((ms) => ({
+        nome: ms.nome, U_W: ms.U_W === null || ms.U_W === undefined ? "desconhecido" : `${ms.U_W} kV`,
+        dps: ms.dps || "sem DPS",
+        rows: [self.opRow(ms.K_S1), self.opRow(ms.K_S2), self.opRow(ms.K_S3), self.opRow(ms.K_S4),
+          self.opRow(ms.P_SPD), self.opRow(ms.P_MS_i), self.opRow(ms.P_C_i)],
+      }));
+      const linhas = mz.linhas.map((ml) => ({
+        nome: ml.nome, uw_min: ml.uw_min === null || ml.uw_min === undefined ? "1 kV (conservador)" : `${ml.uw_min} kV`,
+        trechos: ml.trechos.map((t) => ({
+          nome: t.nome,
+          rows: [self.opRow(t.C_I), self.opRow(t.C_E), self.opRow(t.C_T), self.opRow(t.A_L),
+            self.opRow(t.N_L), self.opRow(t.A_I), self.opRow(t.N_I)].concat(t.N_DJ ? [self.opRow(t.N_DJ)] : []),
+        })),
+        rows: [self.opRow(ml.C_LD), self.opRow(ml.C_LI), self.opRow(ml.P_LD), self.opRow(ml.P_LI),
+          self.opRow(ml.P_TU), self.opRow(ml.P_EB), self.opRow(ml.P_U), self.opRow(ml.P_V),
+          self.opRow(ml.P_W), self.opRow(ml.P_Z)],
+      }));
+      const perdasRows = [self.opRow(mz.L_A), self.opRow(mz.L_B), self.opRow(mz.L_sis)];
+      if (mz.L_B3) perdasRows.push(self.opRow(mz.L_B3));
+      if (mz.L4_A) perdasRows.push(self.opRow(mz.L4_A), self.opRow(mz.L4_B), self.opRow(mz.L4_sis));
+      const probs = [self.opRow(mz.P_A), self.opRow(mz.P_C), self.opRow(mz.P_M)];
+      const riscosRows = [self.opRow(mz.R_A), self.opRow(mz.R_B), self.opRow(mz.R_C), self.opRow(mz.R_M),
+        self.opRow(mz.R_U), self.opRow(mz.R_V), self.opRow(mz.R_W), self.opRow(mz.R_Z)];
+      if (mz.R_B3) riscosRows.push(self.opRow(mz.R_B3));
+      if (mz.R_V3) riscosRows.push(self.opRow(mz.R_V3));
+      if (mz.R4_total) riscosRows.push(self.opRow(mz.R4_total));
+      riscosRows.push(self.opRow(mz.F_zona));
+      return { nome: mz.nome, coefRows, perdasRows, probs, sistemas, linhas, riscosRows };
+    });
+    return {
+      nome: me.nome, ft: me.ft,
+      eventos: [self.opRow(me.A_D), self.opRow(me.C_D), self.opRow(me.N_D), self.opRow(me.A_M), self.opRow(me.N_M)],
+      totais: [self.opRow(me.R1), self.opRow(me.R3), self.opRow(me.R4), self.opRow(me.F)],
+      zonas,
+    };
+  }
+
+  renderVals() {
+    const s = this.state;
+    if (!s.ready) return { ready: false, loading: true };
+
+    const projeto = s.projeto;
+    let resultado = null, memoria = null, calcError = null;
+    try {
+      resultado = this._calc.analisar(projeto);
+      memoria = this._calc.analisarMemoria(projeto);
+    } catch (err) { calcError = String((err && err.message) || err); }
+
+    const totalEst = projeto.estruturas.length;
+    const countExcede = resultado ? resultado.estruturas.filter((e) => e.excede_R1 || e.excede_R3 || e.excede_R4 || e.excede_F).length : 0;
+
+    const navDef = [
+      ["projeto", "Projeto", null],
+      ["estruturas", "Estruturas", totalEst],
+      ["resultados", "Resultados", countExcede > 0 ? countExcede : null],
+      ["memorial", "Memorial de Cálculo", null],
+      ["solucao", "Estudo de Solução", null],
+    ];
+    const navItems = navDef.map(([key, label, badge]) => {
+      const active = s.tab === key;
+      return {
+        key, label, badge, hasBadge: badge !== null && badge !== undefined,
+        style: `display:flex;align-items:center;justify-content:space-between;gap:8px;padding:11px 22px;font:${active ? 600 : 500} 13.5px 'IBM Plex Sans',sans-serif;color:${active ? "#fff" : "#a8b3c4"};cursor:pointer;border-left:3px solid ${active ? "#4f8ef7" : "transparent"};background:${active ? "rgba(255,255,255,0.06)" : "transparent"}`,
+        badgeStyle: `font:700 10.5px 'IBM Plex Mono',monospace;background:${key === "resultados" && badge ? "#e0463a" : "#33415a"};color:#fff;padding:2px 7px;border-radius:20px`,
+        onClick: () => this.setTab(key),
+      };
+    });
+
+    const tabBtnStyle = (active) => `padding:8px 15px;border-radius:7px;border:1px solid ${active ? "#2354a6" : "#d7dee8"};background:${active ? "#2354a6" : "#fff"};color:${active ? "#fff" : "#3a4453"};font:600 12.5px 'IBM Plex Sans',sans-serif;cursor:pointer`;
+    const estruturasView = projeto.estruturas.map((est, i) => {
+      const v = this.buildEstView(est, i, resultado ? resultado.estruturas[i] : null);
+      v.expanded = s.ui.expEst === i;
+      const curTab = s.ui.expEst === i ? s.ui.estTab : "geral";
+      v.tabGeral = curTab === "geral"; v.tabZonas = curTab === "zonas"; v.tabLinhas = curTab === "linhas";
+      v.tabGeralBtnStyle = tabBtnStyle(v.tabGeral); v.tabZonasBtnStyle = tabBtnStyle(v.tabZonas); v.tabLinhasBtnStyle = tabBtnStyle(v.tabLinhas);
+      v.chevronStyle = `display:inline-block;transition:transform .15s;transform:rotate(${v.expanded ? 90 : 0}deg);color:#8892a3;font-size:12px;width:14px;flex-shrink:0`;
+      v.badgeStyle = v.resumo ? `font:700 11.5px 'IBM Plex Mono',monospace;padding:4px 9px;border-radius:20px;background:${v.resumo.ok ? "#e6f6ee" : "#fdecea"};color:${v.resumo.ok ? "#1a7f5a" : "#c0392b"}` : "";
+      v.badgeText = v.resumo ? (v.resumo.ok ? "Dentro do limite" : "Excede limite") : "";
+      v.zonas.forEach((z) => {
+        z.expanded = s.ui.expZona === z.j;
+        z.chevronStyle = `display:inline-block;transition:transform .15s;transform:rotate(${z.expanded ? 90 : 0}deg);color:#8892a3;font-size:11px;width:12px;flex-shrink:0`;
+      });
+      v.linhas.forEach((l) => {
+        l.expanded = s.ui.expLinha === l.j;
+        l.chevronStyle = `display:inline-block;transition:transform .15s;transform:rotate(${l.expanded ? 90 : 0}deg);color:#8892a3;font-size:11px;width:12px;flex-shrink:0`;
+        l.adjBtnLabel = l.temAdjacente ? "Remover estrutura adjacente" : "+ Estrutura adjacente conectada";
+      });
+      return v;
+    });
+
+    let resTab = null;
+    if (resultado) {
+      const selIdx = Math.min(s.ui.resEst, resultado.estruturas.length - 1);
+      const lista = resultado.estruturas.map((re, i) => {
+        const ok = !(re.excede_R1 || re.excede_R3 || re.excede_R4 || re.excede_F);
+        const sel = i === selIdx;
+        return {
+          i, nome: projeto.estruturas[i].nome, ok, selected: sel,
+          style: `display:inline-flex;align-items:center;padding:9px 14px;border-radius:20px;cursor:pointer;background:${sel ? "#173d73" : "#fff"};border:1px solid ${sel ? "#173d73" : "#dde3ea"}`,
+          dotStyle: `width:7px;height:7px;border-radius:50%;background:${ok ? "#2fbf82" : "#e0463a"};flex-shrink:0`,
+          textStyle: `font:500 13px 'IBM Plex Sans',sans-serif;color:${sel ? "#fff" : "#1e2937"};white-space:nowrap`,
+          onSelect: () => this.setUI({ resEst: i }),
+        };
+      });
+      const re = resultado.estruturas[selIdx >= 0 ? selIdx : 0];
+      resTab = { lista, selecionada: re ? this.buildResultadoDetalhe(re, resultado.rt) : null };
+    }
+
+    let memTab = null;
+    if (memoria) {
+      const selIdx = Math.min(s.ui.memEst, memoria.estruturas.length - 1);
+      const lista = memoria.estruturas.map((me, i) => {
+        const sel = i === selIdx;
+        return {
+          i, nome: me.nome, selected: sel,
+          style: `display:flex;align-items:center;padding:11px 14px;border-radius:8px;cursor:pointer;background:${sel ? "#eaf1fc" : "transparent"};border:1px solid ${sel ? "#bcd4f5" : "transparent"};font:${sel ? 600 : 500} 13px 'IBM Plex Sans',sans-serif;color:${sel ? "#173d73" : "#3a4453"}`,
+          onSelect: () => this.setUI({ memEst: i }),
+        };
+      });
+      const me = memoria.estruturas[selIdx >= 0 ? selIdx : 0];
+      memTab = { lista, selecionada: me ? this.buildMemorialDetalhe(me) : null };
+    }
+
+    let solTab = null;
+    if (resultado) {
+      const lista = resultado.estruturas.map((re, i) => {
+        const ok = !(re.excede_R1 || re.excede_R3 || re.excede_R4 || re.excede_F);
+        const sel = i === Math.min(s.ui.solEst ?? 0, resultado.estruturas.length - 1);
+        const temProposta = !!(projeto.estruturas[i].proposta && projeto.estruturas[i].proposta.combo);
+        return {
+          i, nome: projeto.estruturas[i].nome + (temProposta ? " · proposta salva" : ""), selected: sel,
+          style: `display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border-radius:20px;cursor:pointer;background:${sel ? "#173d73" : "#fff"};border:1px solid ${sel ? "#173d73" : "#dde3ea"}`,
+          dotStyle: `width:7px;height:7px;border-radius:50%;background:${ok ? "#2fbf82" : "#e0463a"};flex-shrink:0`,
+          textStyle: `font:500 13px 'IBM Plex Sans',sans-serif;color:${sel ? "#fff" : "#1e2937"};white-space:nowrap`,
+          onSelect: () => this.setUI({ solEst: i }),
+        };
+      });
+      solTab = { erro: null, lista, detalhe: null };
+      if (s.tab === "solucao" && projeto.estruturas.length > 0) {
+        try {
+          const selIdx = Math.min(s.ui.solEst ?? 0, projeto.estruturas.length - 1);
+          const est = projeto.estruturas[selIdx];
+          const pac = this.pacotesCacheados(projeto, est, selIdx);
+          const identidade = pac.identidade || {};
+          const propostaSalva = est.proposta && est.proposta.combo;
+          const comboSalvo = s.ui.solCombo && s.ui.solCombo[selIdx];
+          const comboAtual = comboSalvo || propostaSalva || (pac.pacotes[0] ? pac.pacotes[0].combo : identidade);
+          const avaliado = this._calc.avaliarCombinacao(projeto, est, comboAtual);
+          const valorForm = (v) => (v === null || v === undefined ? "" : v);
+          solTab.detalhe = {
+            nome: pac.nome, jaConforme: pac.jaConforme, semSolucao: pac.semSolucao,
+            R1: this.fmt(pac.R1), F: this.fmt(pac.F),
+            rt_R1: pac.rt_R1 === null ? "—" : this.fmt(pac.rt_R1), ft: this.fmt(pac.ft),
+            temProposta: !!propostaSalva,
+            onSalvarProposta: () => this.salvarProposta(selIdx, comboAtual),
+            onLimparProposta: () => this.limparProposta(selIdx),
+            temPacotes: pac.pacotes.length > 0,
+            pacotes: pac.pacotes.map((p) => {
+              const selecionado = JSON.stringify(p.combo) === JSON.stringify(comboAtual);
+              return {
+                indice: p.indice, marcaSelecionado: selecionado ? " · em uso" : "",
+                cardStyle: `border-radius:10px;padding:12px 14px;cursor:pointer;border:1.5px solid ${selecionado ? "#2354a6" : "#e2e6ed"};background:${selecionado ? "#eaf1fc" : "#f8f9fb"}`,
+                resumo: p.mudancas.map((m) => `${m.descricao}: ${m.de} → ${m.para}`).join(" · "),
+                R1: this.fmt(p.R1), F: this.fmt(p.F),
+                onUsar: () => this.setSolCombo(selIdx, p.combo),
+              };
+            }),
+            temMedidas: pac.medidas.length > 0,
+            medidas: pac.medidas.map((m) => ({
+              id: m.id, descricao: m.descricao, valorForm: valorForm(comboAtual[m.id]),
+              opcoes: m.opcoes.filter((o) => o.disponivel).map((o) => ({ valorForm: valorForm(o.valor), rotulo: o.rotulo })),
+              onChange: (e) => {
+                const raw = e.target.value;
+                const valor = raw === "" ? null : raw;
+                this.setSolCombo(selIdx, { ...comboAtual, [m.id]: valor });
+              },
+            })),
+            simulado: {
+              R1: this.fmt(avaliado.R1), F: this.fmt(avaliado.F), R3: this.fmt(avaliado.R3), R4: this.fmt(avaliado.R4),
+              corR1: avaliado.excede_R1 ? "#c0392b" : "#1a7f5a", corF: avaliado.excede_F ? "#c0392b" : "#1a7f5a",
+            },
+            onAplicar: () => this.aplicarComboAoProjeto(selIdx, comboAtual),
+          };
+        } catch (err) { solTab.erro = String((err && err.message) || err); }
+      }
+    }
+
+    return {
+      ready: true, loading: false, calcError,
+      projetoNome: projeto.nome || "Sem nome", cidadeLabel: projeto.cidade || "cidade não informada",
+      headerTitulo: projeto.nome || "Novo projeto",
+      headerSubtitulo: `${totalEst} estrutura${totalEst === 1 ? "" : "s"} · ${countExcede > 0 ? `${countExcede} acima do risco tolerável` : "todas dentro do risco tolerável"}`,
+      onLoadExample: () => this.loadExample(),
+      onNewProject: () => this.newProject(),
+      onSalvarJson: () => this.salvarProjetoJson(),
+      onCarregarJson: () => this.carregarProjetoJson(),
+      onExportarRelatorio: () => this.exportarRelatorio(),
+      navItems,
+      isProjeto: s.tab === "projeto", isEstruturas: s.tab === "estruturas",
+      isResultados: s.tab === "resultados", isMemorial: s.tab === "memorial", isSolucao: s.tab === "solucao",
+      proj: {
+        nome: projeto.nome, cidade: projeto.cidade, N_G: projeto.N_G,
+        S_M: projeto.S_M === null || projeto.S_M === undefined ? "" : projeto.S_M,
+        r4_representativo: projeto.r4_representativo,
+        rtOverrideOn: !!projeto.rt_override, ftOverrideOn: projeto.ft_override !== null && projeto.ft_override !== undefined,
+        rt_R1: projeto.rt_override && projeto.rt_override.R1 !== undefined ? projeto.rt_override.R1 : this._calc.REF.RT.R1,
+        rt_R3: projeto.rt_override && projeto.rt_override.R3 !== undefined ? projeto.rt_override.R3 : this._calc.REF.RT.R3,
+        rt_R4: projeto.rt_override && projeto.rt_override.R4 !== undefined ? projeto.rt_override.R4 : this._calc.REF.RT.R4,
+        ft_override: projeto.ft_override === null || projeto.ft_override === undefined ? 1.0 : projeto.ft_override,
+        identificacao: { ...projeto.identificacao },
+        onNome: (e) => this.updateProjeto({ nome: e.target.value }),
+        onCidade: (e) => this.updateProjeto({ cidade: e.target.value }),
+        onNG: (e) => this.updateProjeto({ N_G: this.num(e.target.value, 1) }),
+        onSM: (e) => this.updateProjeto({ S_M: this.numOrNull(e.target.value) }),
+        onR4Repr: (e) => this.updateProjeto({ r4_representativo: e.target.checked }),
+        onRtOverrideToggle: (e) => this.toggleRtOverride(e.target.checked),
+        onFtOverrideToggle: (e) => this.toggleFtOverride(e.target.checked),
+        onRtR1: (e) => this.updateProjeto({ rt_override: { ...(projeto.rt_override || this._calc.REF.RT), R1: this.num(e.target.value, 1e-5) } }),
+        onRtR3: (e) => this.updateProjeto({ rt_override: { ...(projeto.rt_override || this._calc.REF.RT), R3: this.num(e.target.value, 1e-4) } }),
+        onRtR4: (e) => this.updateProjeto({ rt_override: { ...(projeto.rt_override || this._calc.REF.RT), R4: this.num(e.target.value, 1e-3) } }),
+        onFtOverrideVal: (e) => this.updateProjeto({ ft_override: this.num(e.target.value, 1) }),
+        onTitulo: (e) => this.updateIdentificacao({ titulo: e.target.value }),
+        onCliente: (e) => this.updateIdentificacao({ cliente: e.target.value }),
+        onEndereco: (e) => this.updateIdentificacao({ endereco: e.target.value }),
+        onResponsavel: (e) => this.updateIdentificacao({ responsavel: e.target.value }),
+        onArt: (e) => this.updateIdentificacao({ art: e.target.value }),
+        onRegistro: (e) => this.updateIdentificacao({ registro: e.target.value }),
+        onData: (e) => this.updateIdentificacao({ data: e.target.value }),
+        onObservacoes: (e) => this.updateIdentificacao({ observacoes: e.target.value }),
+      },
+      estruturas: estruturasView,
+      onAddEstrutura: () => this.addEstrutura(),
+      resTab, memTab, solTab,
+    };
+  }
+}
+
+</script>
+</body>
+</html>
